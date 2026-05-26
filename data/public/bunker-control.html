@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bunker Control - Wasteland Scavenger</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<script src="nav.js"></script>
+
+<main class="page-wrap">
+  <h1 class="page-title">⚙️ Bunker Control</h1>
+  <p class="page-sub">Inventory and role assignment — edit mechanic added in Checkpoint #09</p>
+
+  <!-- Resources -->
+  <div class="stat-row">
+    <div class="stat-box">
+      <div class="stat-label">Food</div>
+      <div class="stat-value blue" id="r-food">0</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">Water</div>
+      <div class="stat-value blue" id="r-water">0</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">Scrap</div>
+      <div class="stat-value" id="r-scrap">0</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">Caps</div>
+      <div class="stat-value" id="r-caps">0</div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <!-- Survivor Roster -->
+    <div class="card">
+      <div class="card-title">Survivor Roster</div>
+      <table class="table">
+        <thead>
+          <tr><th>Name</th><th>Role</th><th>Health</th></tr>
+        </thead>
+        <tbody>
+          <tr><td colspan="3" style="color:var(--text-dim); font-style:italic;">Populated in Checkpoint #09</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Inventory -->
+    <div class="card card-yellow">
+      <div class="card-title">Inventory</div>
+      <table class="table">
+        <thead>
+          <tr><th>Item</th><th>Qty</th><th>Action</th></tr>
+        </thead>
+        <tbody>
+          <tr><td colspan="3" style="color:var(--text-dim); font-style:italic;">Populated in Checkpoint #09</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</main>
+
+<script>
+  var state = JSON.parse(localStorage.getItem("gameState") || "{}");
+  document.getElementById("r-food").textContent  = state.food  || 0;
+  document.getElementById("r-water").textContent = state.water || 0;
+  document.getElementById("r-scrap").textContent = state.scrap || 0;
+  document.getElementById("r-caps").textContent  = state.caps  || 0;
+</script>
+</body>
+</html>

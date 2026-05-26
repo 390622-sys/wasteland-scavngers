@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Expedition - Wasteland Scavenger</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<script src="nav.js"></script>
+
+<main class="page-wrap">
+  <h1 class="page-title">⚡ Expedition</h1>
+  <p class="page-sub">Scavenge zones — loot mechanic added in Checkpoint #06, AI encounters in #07</p>
+
+  <div class="alert">Zones are visible but locked until Checkpoint #06.</div>
+
+  <div class="grid-3">
+    <div class="card card-yellow">
+      <div class="card-title">☢ The Glowing Crater</div>
+      <p style="color:var(--text-dim); margin-bottom:16px; font-size:14px;">
+        Extremely high radiation. Rare loot if you survive.
+      </p>
+      <div class="stat-row" style="margin-bottom:16px;">
+        <div class="stat-box" style="min-width:80px; padding:10px 14px;">
+          <div class="stat-label">Danger</div>
+          <div class="stat-value red" style="font-size:20px;">8/10</div>
+        </div>
+        <div class="stat-box" style="min-width:80px; padding:10px 14px;">
+          <div class="stat-label">Loot x</div>
+          <div class="stat-value" style="font-size:20px;">3.0</div>
+        </div>
+      </div>
+      <button class="btn btn-outline btn-sm" disabled>Locked</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🏪 Abandoned Supermart</div>
+      <p style="color:var(--text-dim); margin-bottom:16px; font-size:14px;">
+        Medium risk. Reliable food and supply runs.
+      </p>
+      <div class="stat-row" style="margin-bottom:16px;">
+        <div class="stat-box" style="min-width:80px; padding:10px 14px;">
+          <div class="stat-label">Danger</div>
+          <div class="stat-value" style="font-size:20px;">4/10</div>
+        </div>
+        <div class="stat-box" style="min-width:80px; padding:10px 14px;">
+          <div class="stat-label">Loot x</div>
+          <div class="stat-value" style="font-size:20px;">1.5</div>
+        </div>
+      </div>
+      <button class="btn btn-blue btn-sm" disabled>Locked</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🌾 Mutant Farmlands</div>
+      <p style="color:var(--text-dim); margin-bottom:16px; font-size:14px;">
+        Low danger. Steady food supply.
+      </p>
+      <div class="stat-row" style="margin-bottom:16px;">
+        <div class="stat-box" style="min-width:80px; padding:10px 14px;">
+          <div class="stat-label">Danger</div>
+          <div class="stat-value blue" style="font-size:20px;">2/10</div>
+        </div>
+        <div class="stat-box" style="min-width:80px; padding:10px 14px;">
+          <div class="stat-label">Loot x</div>
+          <div class="stat-value" style="font-size:20px;">1.0</div>
+        </div>
+      </div>
+      <button class="btn btn-blue btn-sm" disabled>Locked</button>
+    </div>
+  </div>
+
+  <!-- AI encounter panel (empty until CP#07) -->
+  <div class="card" id="ai-panel" style="margin-top:24px; display:none;">
+    <div class="card-title">☢ AI Wasteland Director</div>
+    <p id="ai-text" style="font-family:var(--font-mono); font-size:13px; color:var(--text); line-height:1.8;"></p>
+  </div>
+
+</main>
+</body>
+</html>

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Checkpoints — Wasteland Scavenger</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="page--checkpoints">
+
+  <script src="nav.js"></script>
+
+  <main class="page-wrap animate-fade-in">
+    <div class="page-header">
+      <h1 class="page-header__title">📋 Dev Log — Checkpoints</h1>
+      <p class="page-header__sub">Project progress — add a row after each completed checkpoint</p>
+    </div>
+
+    <div class="panel">
+      <table class="data-table" id="checkpoints-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Checkpoint Name</th>
+            <th>Date</th>
+            <th>GitHub Commit</th>
+            <th>Reflection</th>
+          </tr>
+        </thead>
+        <tbody id="checkpoints-body">
+          <!-- Rows added here after each checkpoint is complete -->
+        </tbody>
+      </table>
+    </div>
+
+  </main>
+
+  <script>
+    // ── Checkpoint data ──────────────────────────────────────
+    // Add an entry here after each checkpoint is merged to GitHub.
+    // Format: { id, name, date, commitUrl, reflection }
+    const checkpoints = [
+      {
+        id:         "#01",
+        name:       "Project Setup",
+        date:       "2026-05-21",
+        commitUrl:  "#",   // ← replace with actual GitHub commit URL
+        reflection: "Repository created, folder structure organized, Express server scaffolded, Hello Wasteland home page running."
+      },
+      {
+        id:         "#02",
+        name:       "Navigation & Routing",
+        date:       "2026-05-21",
+        commitUrl:  "#",   // ← replace after pushing this commit
+        reflection: "Built shared nav.js injector, wired all 8 routes in index.js, created shell HTML for every view with consistent wasteland theme."
+      },
+      // ── Future entries ──────────────────────────────────────
+      // { id:"#03", name:"Registration Flow", date:"", commitUrl:"#", reflection:"" },
+    ];
+
+    // ── Render ───────────────────────────────────────────────
+    const tbody = document.getElementById("checkpoints-body");
+
+    if (checkpoints.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="5" style="color:var(--clr-text-dim);font-style:italic;">
+        No checkpoints logged yet.</td></tr>`;
+    } else {
+      checkpoints.forEach((cp) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td style="color:var(--clr-amber);font-family:var(--font-display);font-size:11px;">${cp.id}</td>
+          <td style="font-family:var(--font-mono);">${cp.name}</td>
+          <td style="font-family:var(--font-mono);color:var(--clr-text-dim);">${cp.date || "—"}</td>
+          <td>
+            ${cp.commitUrl && cp.commitUrl !== "#"
+              ? `<a href="${cp.commitUrl}" target="_blank" rel="noopener" style="font-family:var(--font-mono);font-size:11px;">
+                   View Commit →
+                 </a>`
+              : `<span style="color:var(--clr-text-dim);font-family:var(--font-mono);font-size:11px;">Pending</span>`
+            }
+          </td>
+          <td style="font-family:var(--font-mono);font-size:12px;color:var(--clr-text-dim);">
+            ${cp.reflection}
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+  </script>
+
+</body>
+</html>

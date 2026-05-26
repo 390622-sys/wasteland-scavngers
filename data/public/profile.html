@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Profile - Wasteland Scavenger</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<script src="nav.js"></script>
+
+<main class="page-wrap">
+  <h1 class="page-title">👤 Survivor Profile</h1>
+  <p class="page-sub">Your stats and extended profile — 9-field form added in Checkpoint #04</p>
+
+  <div id="no-user" class="alert red" style="display:none;">
+    No survivor found. <a href="register.html">Enlist first →</a>
+  </div>
+
+  <div id="profile-content" style="display:none;">
+    <div class="grid-2">
+
+      <div class="card card-yellow">
+        <div class="card-title">Identity</div>
+        <div style="margin-bottom:14px;">
+          <div class="stat-label">Callsign</div>
+          <div style="font-size:24px; font-weight:700; color:var(--yellow);" id="p-name">—</div>
+        </div>
+        <div style="margin-bottom:14px;">
+          <div class="stat-label">Faction</div>
+          <div style="font-size:16px; font-family:var(--font-mono); color:var(--text);" id="p-faction">—</div>
+        </div>
+        <div>
+          <div class="stat-label">Role</div>
+          <div style="font-size:16px; font-family:var(--font-mono); color:var(--text-dim);" id="p-role">Survivor</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Wasteland Stats</div>
+        <p style="color:var(--text-dim); font-family:var(--font-mono); font-size:13px; line-height:1.7;">
+          Extended stats (Strength, Agility, Radiation, Caps, Total Runs, etc.) will be filled in during
+          <strong style="color:var(--yellow);">Checkpoint #04</strong>.
+        </p>
+        <div style="margin-top:20px;">
+          <div class="stat-label">Radiation Level</div>
+          <div class="bar-wrap" style="margin-top:8px;">
+            <div class="bar-fill red" style="width:25%;"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<script>
+  var user = JSON.parse(localStorage.getItem("currentUser") || "null");
+  if (!user) {
+    document.getElementById("no-user").style.display = "block";
+  } else {
+    document.getElementById("profile-content").style.display = "block";
+    document.getElementById("p-name").textContent    = user.username || "Unknown";
+    document.getElementById("p-faction").textContent = user.faction  || "None";
+    document.getElementById("p-role").textContent    = user.role === "admin" ? "Admin" : "Survivor";
+  }
+</script>
+</body>
+</html>

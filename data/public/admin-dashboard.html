@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Command Center — Wasteland Scavenger</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="page--admin">
+
+  <script src="nav.js"></script>
+
+  <main class="page-wrap animate-fade-in">
+    <div class="page-header">
+      <h1 class="page-header__title" style="color:var(--clr-red);">☣ Admin Command Center</h1>
+      <p class="page-header__sub">Restricted — Overseer Eyes Only</p>
+    </div>
+
+    <!-- Access Guard -->
+    <div id="admin-denied" class="alert alert--red" style="display:none;">
+      ☣ ACCESS DENIED — Admin credentials required.
+      <a href="index.html">Return to surface →</a>
+    </div>
+
+    <div id="admin-content" style="display:none;">
+      <div class="alert alert--red">
+        ☣ Full admin functionality (global stats, zone editor) will be built in
+        <strong>Checkpoints #08 & #10</strong>.
+      </div>
+
+      <div class="grid-3">
+        <div class="panel panel--red">
+          <div class="panel-title">Total Survivors</div>
+          <p class="hud-stat__value hud-stat__value--red" id="admin-survivors">—</p>
+        </div>
+        <div class="panel panel--red">
+          <div class="panel-title">Active Zones</div>
+          <p class="hud-stat__value" id="admin-zones">—</p>
+        </div>
+        <div class="panel panel--red">
+          <div class="panel-title">Environmental Hazards</div>
+          <p class="hud-stat__value hud-stat__value--red" id="admin-hazards">—</p>
+        </div>
+      </div>
+
+      <div class="panel" style="margin-top:24px;">
+        <div class="panel-title">Hazard Management</div>
+        <p style="font-family:var(--font-mono); font-size:12px; color:var(--clr-text-dim);">
+          Admin zone modifiers ("Radstorm Event" toggle, danger level editor) will go here in
+          <strong style="color:var(--clr-red)">Checkpoint #10</strong>.
+        </p>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    const user = JSON.parse(localStorage.getItem("currentUser") || "null");
+    if (!user || user.role !== "admin") {
+      document.getElementById("admin-denied").style.display  = "block";
+    } else {
+      document.getElementById("admin-content").style.display = "block";
+      // Placeholder counts — wired in CP #08
+      document.getElementById("admin-survivors").textContent = "—";
+      document.getElementById("admin-zones").textContent     = "—";
+      document.getElementById("admin-hazards").textContent   = "—";
+    }
+  </script>
+
+</body>
+</html>

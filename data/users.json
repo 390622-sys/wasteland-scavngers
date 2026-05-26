@@ -1,0 +1,10 @@
+[
+  {
+    "id": "u001",
+    "username": "fallout123",
+    "email": "myles123@email.com",
+    "faction": "Raiders",
+    "password": "hashed_password",
+    "createdAt": "2026-05-26"
+  }
+]

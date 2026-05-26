@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bunker HQ - Wasteland Scavenger</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<script src="nav.js"></script>
+
+<main class="page-wrap">
+
+  <!-- Hero -->
+  <div style="text-align:center; padding: 40px 0 48px;">
+    <div style="font-size:64px; margin-bottom:16px;">☢</div>
+    <h1 style="font-size:42px; color:var(--yellow); margin-bottom:12px;">WASTELAND SCAVENGER</h1>
+    <p style="color:var(--text-dim); font-family:var(--font-mono); font-size:14px; margin-bottom:32px;">
+      Manage your bunker. Scout the wasteland. Survive.
+    </p>
+    <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+      <a href="register.html" class="btn btn-yellow">▶ Enlist Now</a>
+      <a href="expedition.html" class="btn btn-outline">⚡ Send Expedition</a>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stat-row" id="home-stats">
+    <div class="stat-box">
+      <div class="stat-label">Survivors</div>
+      <div class="stat-value" id="s-survivors">0</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">Food</div>
+      <div class="stat-value blue" id="s-food">0</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">Water</div>
+      <div class="stat-value blue" id="s-water">0</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">Scrap</div>
+      <div class="stat-value" id="s-scrap">0</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">Day</div>
+      <div class="stat-value" id="s-day">1</div>
+    </div>
+  </div>
+
+  <!-- Feature cards -->
+  <div class="grid-3">
+    <div class="card card-yellow">
+      <div class="card-title">⚡ Expeditions</div>
+      <p style="color:var(--text-dim); margin-bottom:16px;">Send scouts into the wasteland to find food, water, and scrap.</p>
+      <a href="expedition.html" class="btn btn-outline btn-sm">Go to Zones</a>
+    </div>
+    <div class="card">
+      <div class="card-title">⚙️ Bunker Control</div>
+      <p style="color:var(--text-dim); margin-bottom:16px;">Assign survivor roles and manage your shelter resources.</p>
+      <a href="bunker-control.html" class="btn btn-blue btn-sm">Open Control</a>
+    </div>
+    <div class="card">
+      <div class="card-title">👤 Your Profile</div>
+      <p style="color:var(--text-dim); margin-bottom:16px;">View your survivor stats, faction, and expedition history.</p>
+      <a href="profile.html" class="btn btn-blue btn-sm">View Profile</a>
+    </div>
+  </div>
+
+</main>
+
+<script>
+  var state = JSON.parse(localStorage.getItem("gameState") || "{}");
+  document.getElementById("s-survivors").textContent = state.survivors || 0;
+  document.getElementById("s-food").textContent      = state.food      || 0;
+  document.getElementById("s-water").textContent     = state.water     || 0;
+  document.getElementById("s-scrap").textContent     = state.scrap     || 0;
+  document.getElementById("s-day").textContent       = state.day       || 1;
+</script>
+</body>
+</html>
