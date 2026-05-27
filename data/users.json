@@ -1,10 +1,79 @@
 [
   {
-    "id": "u001",
-    "username": "fallout123",
-    "email": "myles123@email.com",
+    "id": "user-0001",
+    "username": "GhostWalker",
+    "email": "ghost@wasteland.com",
+    "password": "scavenger1",
+    "faction": "Nomads",
+    "role": "user",
+    "caps": 340,
+    "level": 4,
+    "createdAt": "2026-01-10T08:22:00.000Z"
+  },
+  {
+    "id": "user-0002",
+    "username": "IronMaven",
+    "email": "iron@wasteland.com",
+    "password": "raider99",
     "faction": "Raiders",
-    "password": "hashed_password",
-    "createdAt": "2026-05-26"
+    "role": "user",
+    "caps": 210,
+    "level": 2,
+    "createdAt": "2026-02-03T14:05:00.000Z"
+  },
+  {
+    "id": "user-0003",
+    "username": "VaultTec_Rex",
+    "email": "rex@wasteland.com",
+    "password": "brotherhood1",
+    "faction": "Brotherhood",
+    "role": "admin",
+    "caps": 1200,
+    "level": 9,
+    "createdAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "user-0004",
+    "username": "DustDrifter",
+    "email": "dust@wasteland.com",
+    "password": "settler42",
+    "faction": "Settlers",
+    "role": "user",
+    "caps": 75,
+    "level": 1,
+    "createdAt": "2026-03-15T19:30:00.000Z"
+  },
+  {
+    "id": "user-0005",
+    "username": "NullSignal",
+    "email": "null@wasteland.com",
+    "password": "nomad77",
+    "faction": "Nomads",
+    "role": "user",
+    "caps": 520,
+    "level": 6,
+    "createdAt": "2026-02-28T11:45:00.000Z"
+  },
+  {
+    "id": "user-1779903001691",
+    "username": "fallguy69",
+    "email": "fallguy2626",
+    "password": "FYUFDYYUOIU&IUYT*(o",
+    "faction": "Settlers",
+    "role": "user",
+    "caps": 100,
+    "level": 1,
+    "createdAt": "2026-05-27T17:30:01.647Z"
+  },
+  {
+    "id": "user-1779903242925",
+    "username": "Angel",
+    "email": "390622@guhsd.net",
+    "password": "21212121",
+    "faction": "Raiders",
+    "role": "user",
+    "caps": 100,
+    "level": 1,
+    "createdAt": "2026-05-27T17:34:02.864Z"
   }
 ]
