@@ -5,78 +5,722 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Expedition - Wasteland Scavenger</title>
   <link rel="stylesheet" href="style.css" />
+  <style>
+    /* ── Scanning animation overlay ── */
+    .scanning-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(6, 13, 20, 0.92);
+      z-index: 200;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+    }
+    .scanning-overlay.active { display: flex; }
+
+    .scan-icon {
+      font-size: 64px;
+      animation: spin 1.2s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .scan-title {
+      font-family: var(--font-display, 'Rajdhani', sans-serif);
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--yellow);
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+    }
+
+    .scan-bar-wrap {
+      width: 280px;
+      height: 6px;
+      background: var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .scan-bar-fill {
+      height: 100%;
+      background: var(--yellow);
+      border-radius: 3px;
+      width: 0%;
+      transition: width 0.1s linear;
+      box-shadow: 0 0 10px var(--yellow);
+    }
+
+    .scan-log {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--text-dim);
+      text-align: center;
+      letter-spacing: 0.06em;
+      min-height: 18px;
+    }
+
+    /* ── Result Modal ── */
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(6, 13, 20, 0.88);
+      z-index: 300;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-backdrop.active { display: flex; }
+
+    .modal {
+      background: var(--bg2, #142233);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      width: 100%;
+      max-width: 440px;
+      margin: 20px;
+      overflow: hidden;
+      animation: popIn 0.25s ease;
+    }
+    @keyframes popIn {
+      from { transform: scale(0.9); opacity: 0; }
+      to   { transform: scale(1);   opacity: 1; }
+    }
+
+    .modal-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .modal-header-icon { font-size: 28px; }
+    .modal-header-title {
+      font-family: var(--font-display, 'Rajdhani', sans-serif);
+      font-size: 16px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+    .modal-body { padding: 20px; }
+    .modal-footer {
+      padding: 14px 20px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+
+    .item-name {
+      font-family: var(--font-display, 'Rajdhani', sans-serif);
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--yellow);
+      margin-bottom: 4px;
+    }
+    .item-meta {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-dim);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+    .item-desc {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--text);
+      line-height: 1.7;
+      margin-bottom: 16px;
+    }
+
+    .rarity-common    { color: #aaa; }
+    .rarity-uncommon  { color: #4a90d9; }
+    .rarity-rare      { color: #a855f7; }
+    .rarity-legendary { color: #f5c518; text-shadow: 0 0 10px #f5c518; }
+
+    .consequence-box {
+      padding: 10px 14px;
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      margin-top: 10px;
+    }
+    .consequence-box.bad {
+      background: rgba(192, 57, 43, 0.1);
+      border: 1px solid #7a3030;
+      color: #e07070;
+    }
+    .consequence-box.good {
+      background: rgba(39, 174, 96, 0.08);
+      border: 1px solid #1a5a30;
+      color: #6be09a;
+    }
+
+    /* ── Zone cards ── */
+    .zone-card {
+      background: var(--bg2, #142233);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .zone-card.radstorm { border-color: #7a3030; }
+
+    .zone-top {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    .zone-icon { font-size: 32px; flex-shrink: 0; }
+    .zone-name {
+      font-family: var(--font-display, 'Rajdhani', sans-serif);
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--yellow);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .zone-desc {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--text-dim);
+      line-height: 1.6;
+    }
+
+    .zone-stats {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .zone-stat {
+      background: var(--bg, #0d1b2a);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 6px 12px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+    .zone-stat span {
+      font-family: var(--font-display, 'Rajdhani', sans-serif);
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--yellow);
+      display: block;
+      margin-top: 1px;
+    }
+    .zone-stat span.red   { color: #e07070; }
+    .zone-stat span.green { color: #6be09a; }
+    .zone-stat span.blue  { color: #4a90d9; }
+
+    .storm-badge {
+      display: inline-block;
+      background: rgba(192,57,43,0.15);
+      border: 1px solid #7a3030;
+      color: #e07070;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      padding: 3px 8px;
+      border-radius: 3px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .locked-overlay {
+      opacity: 0.4;
+      pointer-events: none;
+    }
+    .locked-tag {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-dim);
+      border: 1px solid var(--border);
+      padding: 8px 14px;
+      border-radius: 4px;
+      text-align: center;
+      letter-spacing: 0.08em;
+    }
+
+    /* Recent finds log */
+    .find-entry {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(30,58,85,0.4);
+      animation: slideIn 0.3s ease;
+    }
+    @keyframes slideIn {
+      from { opacity:0; transform: translateX(-10px); }
+      to   { opacity:1; transform: translateX(0); }
+    }
+    .find-entry:last-child { border-bottom: none; }
+    .find-badge {
+      font-size: 20px;
+      width: 36px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+    .find-info { flex: 1; }
+    .find-name {
+      font-family: var(--font-display, 'Rajdhani', sans-serif);
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .find-sub {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-dim);
+      letter-spacing: 0.06em;
+    }
+    .find-value {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--yellow);
+    }
+  </style>
 </head>
 <body>
 <script src="nav.js"></script>
 
-<main class="page-wrap">
-  <h1 class="page-title">⚡ Expedition</h1>
-  <p class="page-sub">Scavenge zones — loot mechanic added in Checkpoint #06, AI encounters in #07</p>
+<!-- ── Scanning Animation Overlay ── -->
+<div class="scanning-overlay" id="scanning-overlay">
+  <div class="scan-icon">☢</div>
+  <div class="scan-title" id="scan-title">Scanning Zone...</div>
+  <div class="scan-bar-wrap">
+    <div class="scan-bar-fill" id="scan-bar"></div>
+  </div>
+  <div class="scan-log" id="scan-log">Initializing sensors...</div>
+</div>
 
-  <div class="alert">Zones are visible but locked until Checkpoint #06.</div>
-
-  <div class="grid-3">
-    <div class="card card-yellow">
-      <div class="card-title">☢ The Glowing Crater</div>
-      <p style="color:var(--text-dim); margin-bottom:16px; font-size:14px;">
-        Extremely high radiation. Rare loot if you survive.
-      </p>
-      <div class="stat-row" style="margin-bottom:16px;">
-        <div class="stat-box" style="min-width:80px; padding:10px 14px;">
-          <div class="stat-label">Danger</div>
-          <div class="stat-value red" style="font-size:20px;">8/10</div>
-        </div>
-        <div class="stat-box" style="min-width:80px; padding:10px 14px;">
-          <div class="stat-label">Loot x</div>
-          <div class="stat-value" style="font-size:20px;">3.0</div>
-        </div>
-      </div>
-      <button class="btn btn-outline btn-sm" disabled>Locked</button>
+<!-- ── Result Modal ── -->
+<div class="modal-backdrop" id="modal-backdrop">
+  <div class="modal" id="result-modal">
+    <div class="modal-header" id="modal-header">
+      <div class="modal-header-icon" id="modal-icon">📦</div>
+      <div class="modal-header-title" id="modal-title">Item Found</div>
     </div>
-
-    <div class="card">
-      <div class="card-title">🏪 Abandoned Supermart</div>
-      <p style="color:var(--text-dim); margin-bottom:16px; font-size:14px;">
-        Medium risk. Reliable food and supply runs.
-      </p>
-      <div class="stat-row" style="margin-bottom:16px;">
-        <div class="stat-box" style="min-width:80px; padding:10px 14px;">
-          <div class="stat-label">Danger</div>
-          <div class="stat-value" style="font-size:20px;">4/10</div>
-        </div>
-        <div class="stat-box" style="min-width:80px; padding:10px 14px;">
-          <div class="stat-label">Loot x</div>
-          <div class="stat-value" style="font-size:20px;">1.5</div>
-        </div>
-      </div>
-      <button class="btn btn-blue btn-sm" disabled>Locked</button>
+    <div class="modal-body" id="modal-body">
+      <!-- Filled by JS -->
     </div>
-
-    <div class="card">
-      <div class="card-title">🌾 Mutant Farmlands</div>
-      <p style="color:var(--text-dim); margin-bottom:16px; font-size:14px;">
-        Low danger. Steady food supply.
-      </p>
-      <div class="stat-row" style="margin-bottom:16px;">
-        <div class="stat-box" style="min-width:80px; padding:10px 14px;">
-          <div class="stat-label">Danger</div>
-          <div class="stat-value blue" style="font-size:20px;">2/10</div>
-        </div>
-        <div class="stat-box" style="min-width:80px; padding:10px 14px;">
-          <div class="stat-label">Loot x</div>
-          <div class="stat-value" style="font-size:20px;">1.0</div>
-        </div>
-      </div>
-      <button class="btn btn-blue btn-sm" disabled>Locked</button>
+    <div class="modal-footer">
+      <button class="btn btn-outline btn-sm" id="modal-close">Discard</button>
+      <button class="btn btn-yellow btn-sm" id="modal-keep">Add to Inventory</button>
     </div>
   </div>
+</div>
 
-  <!-- AI encounter panel (empty until CP#07) -->
-  <div class="card" id="ai-panel" style="margin-top:24px; display:none;">
-    <div class="card-title">☢ AI Wasteland Director</div>
-    <p id="ai-text" style="font-family:var(--font-mono); font-size:13px; color:var(--text); line-height:1.8;"></p>
+<!-- ── Page Content ── -->
+<main class="page-wrap">
+  <h1 class="page-title">⚡ Expedition</h1>
+  <p class="page-sub">Choose a zone and send your scout. Higher danger = better loot, higher risk.</p>
+
+  <div id="login-warning" class="alert red" style="display:none;">
+    You must <a href="register.html">enlist</a> before scavenging.
+  </div>
+
+  <!-- Zone grid — populated from /api/zones -->
+  <div class="grid-3" id="zone-grid" style="margin-bottom:32px;">
+    <div style="color:var(--text-dim); font-family:var(--font-mono); font-size:13px;">Loading zones...</div>
+  </div>
+
+  <!-- Recent Finds Log -->
+  <div class="card" id="finds-card">
+    <div class="card-title">📋 Recent Finds — This Session</div>
+    <div id="finds-log">
+      <p style="font-family:var(--font-mono); font-size:12px; color:var(--text-dim);">
+        Nothing found yet. Go scavenge something.
+      </p>
+    </div>
   </div>
 
 </main>
+
+<script>
+// ================================================================
+//  Expedition — Scavenge mechanic
+//  Checkpoint #06: user clicks zone → animation → loot or risk
+// ================================================================
+
+var currentUser = JSON.parse(localStorage.getItem("currentUser") || "null");
+var pendingItem = null;   // item waiting to be kept or discarded
+var sessionFinds = [];    // finds this session (for the log)
+
+// Loot tables — item templates by type
+var LOOT_TEMPLATES = {
+  food: [
+    { name: "Canned Brahmin Stew",     icon: "🥫", desc: "Two-headed cow stew. Still good... probably." },
+    { name: "Mutant Mushroom",          icon: "🍄", desc: "Glows faintly. Surprisingly nutritious." },
+    { name: "Purified Water Bottle",    icon: "💧", desc: "Filtered through a pre-war purifier." },
+    { name: "Squirrel Jerky",           icon: "🐿", desc: "Dried wasteland squirrel. Chewy." },
+  ],
+  material: [
+    { name: "Scrap Metal",             icon: "🔧", desc: "Twisted chunks of pre-war steel." },
+    { name: "Duct Tape Roll",          icon: "🧰", desc: "Holds the wasteland together." },
+    { name: "Copper Wire Bundle",      icon: "⚡", desc: "Salvaged from an old circuit board." },
+    { name: "Water Purifier Filter",   icon: "🔩", desc: "Salvaged filter. Still functional." },
+  ],
+  weapon: [
+    { name: "Rusty Pipe Wrench",       icon: "🔨", desc: "Heavy and slow but hits hard." },
+    { name: "Laser Pistol",            icon: "🔫", desc: "Pre-war energy weapon. Needs a charge pack." },
+    { name: "Sawed-Off Shotgun",       icon: "💥", desc: "Short range. Very messy." },
+    { name: "Combat Knife",            icon: "🗡",  desc: "Military-grade blade. Still sharp." },
+  ],
+  medicine: [
+    { name: "Rad-Away",                icon: "💊", desc: "Flushes radiation. Tastes awful." },
+    { name: "Stimpak",                 icon: "💉", desc: "Instant healing. Use sparingly." },
+    { name: "Bandage Roll",            icon: "🩹", desc: "Basic wound dressing." },
+  ],
+  armor: [
+    { name: "Leather Jacket",          icon: "🧥", desc: "Scavenged biker jacket. Some protection." },
+    { name: "Riot Helmet",             icon: "⛑",  desc: "Pre-war police helmet. Cracked visor." },
+    { name: "Power Armor Gauntlet",    icon: "🦾", desc: "T-51 hand piece. Heavy but powerful." },
+  ]
+};
+
+var RARITY_WEIGHTS = {
+  common: 50, uncommon: 30, rare: 15, legendary: 5
+};
+
+var SCAN_MESSAGES = [
+  "Bypassing security systems...",
+  "Scanning for hostiles...",
+  "Checking structural integrity...",
+  "Detecting radiation levels...",
+  "Locating salvageable materials...",
+  "Marking extraction route...",
+  "Scout is searching...",
+];
+
+// ── Init ─────────────────────────────────────────────────────────
+window.addEventListener("DOMContentLoaded", function() {
+  if (!currentUser) {
+    document.getElementById("login-warning").style.display = "block";
+  }
+  loadZones();
+});
+
+// ── Load zones from API ───────────────────────────────────────────
+async function loadZones() {
+  try {
+    var res   = await fetch("/api/zones");
+    var zones = await res.json();
+    renderZones(zones);
+  } catch(err) {
+    document.getElementById("zone-grid").innerHTML =
+      '<p style="color:var(--text-dim);font-family:var(--font-mono);font-size:13px;">Could not load zones. Is the server running?</p>';
+  }
+}
+
+function renderZones(zones) {
+  var grid = document.getElementById("zone-grid");
+  grid.innerHTML = "";
+
+  zones.forEach(function(zone) {
+    var isLocked  = zone.status === "locked";
+    var hasStorm  = zone.radstormActive;
+    var danger    = zone.dangerLevel;
+
+    var dangerColor = danger >= 7 ? "red" : danger >= 4 ? "" : "green";
+    var stormBadge  = hasStorm ? '<span class="storm-badge">⚡ Radstorm Active</span>' : "";
+    var dangerDisplay = danger + "/10";
+
+    var card = document.createElement("div");
+    card.className = "zone-card" + (hasStorm ? " radstorm" : "") + (isLocked ? " locked-overlay" : "");
+    card.innerHTML = `
+      <div class="zone-top">
+        <div class="zone-icon">${zone.icon || "☢"}</div>
+        <div>
+          <div class="zone-name">${zone.name}</div>
+          <div class="zone-desc">${zone.description}</div>
+        </div>
+      </div>
+      ${stormBadge}
+      <div class="zone-stats">
+        <div class="zone-stat">Danger<span class="${dangerColor}">${dangerDisplay}</span></div>
+        <div class="zone-stat">Loot x<span>${zone.lootMultiplier}</span></div>
+        <div class="zone-stat">Min Level<span class="blue">${zone.recommendedLevel}</span></div>
+      </div>
+      ${isLocked
+        ? '<div class="locked-tag">🔒 Locked — Level ' + zone.recommendedLevel + ' Required</div>'
+        : '<button class="btn btn-yellow btn-sm" onclick="startScavenge(\'' + zone.id + '\', ' + JSON.stringify(zone).replace(/'/g,"&#39;") + ')">⚡ Scavenge This Zone</button>'
+      }
+    `;
+    grid.appendChild(card);
+  });
+}
+
+// ── Scavenge flow ─────────────────────────────────────────────────
+async function startScavenge(zoneId, zone) {
+  if (!currentUser) {
+    alert("You must enlist before scavenging!");
+    return;
+  }
+
+  // Show scanning animation
+  showScanAnimation(zone, function() {
+    var outcome = rollOutcome(zone);
+    showResultModal(outcome, zone);
+  });
+}
+
+function showScanAnimation(zone, onComplete) {
+  var overlay  = document.getElementById("scanning-overlay");
+  var bar      = document.getElementById("scan-bar");
+  var logEl    = document.getElementById("scan-log");
+  var titleEl  = document.getElementById("scan-title");
+
+  titleEl.textContent = "Scouting " + zone.name + "...";
+  bar.style.width = "0%";
+  overlay.classList.add("active");
+
+  var progress = 0;
+  var msgIndex = 0;
+  var messages = shuffleArray(SCAN_MESSAGES.slice());
+
+  var interval = setInterval(function() {
+    progress += Math.random() * 12 + 5;
+    if (progress > 100) progress = 100;
+    bar.style.width = progress + "%";
+
+    // Cycle through log messages
+    if (progress > msgIndex * (100 / messages.length)) {
+      logEl.textContent = messages[msgIndex] || "";
+      msgIndex++;
+    }
+
+    if (progress >= 100) {
+      clearInterval(interval);
+      logEl.textContent = "Scout returning...";
+      setTimeout(function() {
+        overlay.classList.remove("active");
+        onComplete();
+      }, 600);
+    }
+  }, 150);
+}
+
+// ── Outcome logic ─────────────────────────────────────────────────
+function rollOutcome(zone) {
+  var danger = zone.dangerLevel;
+  var rand   = Math.random() * 100;
+
+  // Risk chance scales with danger level
+  var injuryChance  = danger * 4;      // 8–36%
+  var capsLossChance = danger * 3;     // 6–27%
+
+  var consequences = [];
+  var success = true;
+
+  if (rand < injuryChance) {
+    // Got injured — radiation goes up
+    var radIncrease = Math.floor(Math.random() * danger * 2) + 5;
+    consequences.push({ type: "injury", rad: radIncrease });
+    // High danger might also mean no loot
+    if (rand < injuryChance / 2) success = false;
+  }
+
+  if (rand > 100 - capsLossChance) {
+    // Lost caps to raiders
+    var capsLost = Math.floor(Math.random() * danger * 10) + 10;
+    consequences.push({ type: "caps", amount: capsLost });
+  }
+
+  var item = success ? generateLoot(zone) : null;
+  return { item, consequences, success };
+}
+
+function generateLoot(zone) {
+  // Pick type — higher loot multiplier = more weapon/armor chance
+  var types = ["food", "material", "food", "material", "medicine"];
+  if (zone.lootMultiplier >= 1.5) types.push("weapon");
+  if (zone.lootMultiplier >= 2.0) types.push("armor", "weapon");
+  if (zone.lootMultiplier >= 3.0) types.push("weapon", "armor");
+
+  var type      = types[Math.floor(Math.random() * types.length)];
+  var templates = LOOT_TEMPLATES[type];
+  var template  = templates[Math.floor(Math.random() * templates.length)];
+  var rarity    = rollRarity(zone.lootMultiplier);
+
+  var valueBase = { common: 10, uncommon: 40, rare: 120, legendary: 400 };
+  var value     = Math.floor(valueBase[rarity] * zone.lootMultiplier * (0.8 + Math.random() * 0.4));
+
+  return {
+    id:          "loot-" + Date.now(),
+    userId:      currentUser.id,
+    name:        template.name,
+    icon:        template.icon,
+    type:        type,
+    rarity:      rarity,
+    value:       value,
+    weight:      Math.floor(Math.random() * 5),
+    description: template.desc,
+    foundInZone: null,   // set when saved
+  };
+}
+
+function rollRarity(multiplier) {
+  var rand = Math.random() * 100;
+  // Better multiplier shifts weights toward rare/legendary
+  var shift = (multiplier - 1) * 8;
+  if (rand < 5  + shift)  return "legendary";
+  if (rand < 20 + shift)  return "rare";
+  if (rand < 50 + shift)  return "uncommon";
+  return "common";
+}
+
+// ── Result Modal ──────────────────────────────────────────────────
+function showResultModal(outcome, zone) {
+  var icon   = document.getElementById("modal-icon");
+  var title  = document.getElementById("modal-title");
+  var body   = document.getElementById("modal-body");
+  var header = document.getElementById("modal-header");
+  var keepBtn = document.getElementById("modal-keep");
+
+  pendingItem = outcome.item;
+
+  // Build consequence HTML
+  var consequenceHTML = "";
+  outcome.consequences.forEach(function(c) {
+    if (c.type === "injury") {
+      consequenceHTML += '<div class="consequence-box bad">☢ Radiation exposure +' + c.rad + '% — your scout took a hit.</div>';
+      // Apply radiation to user
+      applyRadiation(c.rad);
+    }
+    if (c.type === "caps") {
+      consequenceHTML += '<div class="consequence-box bad">💰 Lost ' + c.amount + ' caps to raiders on the way back.</div>';
+      applyCapLoss(c.amount);
+    }
+  });
+
+  if (outcome.success && outcome.item) {
+    var item = outcome.item;
+    var rarityClass = "rarity-" + item.rarity;
+    header.style.borderColor = "";
+    icon.textContent  = item.icon || "📦";
+    title.textContent = "Item Found!";
+
+    body.innerHTML = `
+      <div class="item-name">${item.name}</div>
+      <div class="item-meta">
+        <span class="${rarityClass}">${item.rarity.toUpperCase()}</span>
+        &nbsp;·&nbsp; ${item.type}
+        &nbsp;·&nbsp; ${item.value} caps
+      </div>
+      <div class="item-desc">${item.description}</div>
+      ${consequenceHTML}
+      <div class="consequence-box good" style="margin-top:10px;">
+        📍 Found in: ${zone.name}
+      </div>
+    `;
+    keepBtn.style.display = "inline-flex";
+  } else {
+    // Failed run — no loot
+    icon.textContent  = "💀";
+    title.textContent = "Scout Returned Empty";
+    body.innerHTML = `
+      <p style="font-family:var(--font-mono); font-size:13px; color:var(--text); margin-bottom:14px;">
+        The zone was too dangerous. Your scout barely made it back alive.
+      </p>
+      ${consequenceHTML}
+    `;
+    keepBtn.style.display = "none";
+  }
+
+  document.getElementById("modal-backdrop").classList.add("active");
+}
+
+// ── Save item to API ──────────────────────────────────────────────
+document.getElementById("modal-keep").addEventListener("click", async function() {
+  if (!pendingItem) return;
+
+  try {
+    var res = await fetch("/api/loot", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(pendingItem)
+    });
+    var saved = await res.json();
+
+    // Add to session log
+    addToFindLog(saved);
+
+    closeModal();
+  } catch(err) {
+    alert("Could not save item — is the server running?");
+  }
+});
+
+document.getElementById("modal-close").addEventListener("click", closeModal);
+document.getElementById("modal-backdrop").addEventListener("click", function(e) {
+  if (e.target === this) closeModal();
+});
+
+function closeModal() {
+  document.getElementById("modal-backdrop").classList.remove("active");
+  pendingItem = null;
+}
+
+// ── Session find log ──────────────────────────────────────────────
+function addToFindLog(item) {
+  sessionFinds.unshift(item);
+
+  var log = document.getElementById("finds-log");
+  var rarityClass = "rarity-" + item.rarity;
+
+  var entry = document.createElement("div");
+  entry.className = "find-entry";
+  entry.innerHTML = `
+    <div class="find-badge">${item.icon || "📦"}</div>
+    <div class="find-info">
+      <div class="find-name">${item.name}</div>
+      <div class="find-sub"><span class="${rarityClass}">${item.rarity}</span> · ${item.type}</div>
+    </div>
+    <div class="find-value">${item.value} ¢</div>
+  `;
+
+  if (sessionFinds.length === 1) {
+    log.innerHTML = "";
+  }
+  log.insertBefore(entry, log.firstChild);
+}
+
+// ── Apply consequences to user ────────────────────────────────────
+function applyRadiation(amount) {
+  if (!currentUser) return;
+  currentUser.radiation = Math.min(100, (currentUser.radiation || 0) + amount);
+  localStorage.setItem("currentUser", JSON.stringify(currentUser));
+  // Also persist to server
+  fetch("/api/users/" + currentUser.id, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ radiation: currentUser.radiation })
+  }).catch(function(){});
+}
+
+function applyCapLoss(amount) {
+  if (!currentUser) return;
+  currentUser.caps = Math.max(0, (currentUser.caps || 0) - amount);
+  localStorage.setItem("currentUser", JSON.stringify(currentUser));
+  fetch("/api/users/" + currentUser.id, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ caps: currentUser.caps })
+  }).catch(function(){});
+}
+
+// ── Utilities ─────────────────────────────────────────────────────
+function shuffleArray(arr) {
+  for (var i = arr.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
+  }
+  return arr;
+}
+</script>
 </body>
 </html>

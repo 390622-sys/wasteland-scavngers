@@ -24,27 +24,27 @@
     </div>
   </div>
 
-  <!-- Stats -->
-  <div class="stat-row" id="home-stats">
+  <!-- Live Stats from API -->
+  <div class="stat-row">
     <div class="stat-box">
       <div class="stat-label">Survivors</div>
-      <div class="stat-value" id="s-survivors">0</div>
+      <div class="stat-value" id="s-survivors">—</div>
     </div>
     <div class="stat-box">
-      <div class="stat-label">Food</div>
-      <div class="stat-value blue" id="s-food">0</div>
+      <div class="stat-label">Active Zones</div>
+      <div class="stat-value blue" id="s-zones">—</div>
     </div>
     <div class="stat-box">
-      <div class="stat-label">Water</div>
-      <div class="stat-value blue" id="s-water">0</div>
+      <div class="stat-label">Items Found</div>
+      <div class="stat-value blue" id="s-loot">—</div>
     </div>
     <div class="stat-box">
-      <div class="stat-label">Scrap</div>
-      <div class="stat-value" id="s-scrap">0</div>
+      <div class="stat-label">Radstorms</div>
+      <div class="stat-value red" id="s-storms">—</div>
     </div>
     <div class="stat-box">
-      <div class="stat-label">Day</div>
-      <div class="stat-value" id="s-day">1</div>
+      <div class="stat-label">Top Caps</div>
+      <div class="stat-value" id="s-caps">—</div>
     </div>
   </div>
 
@@ -67,15 +67,51 @@
     </div>
   </div>
 
+  <!-- Radstorm warning banner -->
+  <div id="radstorm-alert" style="display:none; margin-top:24px;">
+    <div class="alert red">
+      ⚠ RADSTORM ACTIVE — Danger levels elevated in affected zones. Check the expedition board.
+    </div>
+  </div>
+
 </main>
 
 <script>
-  var state = JSON.parse(localStorage.getItem("gameState") || "{}");
-  document.getElementById("s-survivors").textContent = state.survivors || 0;
-  document.getElementById("s-food").textContent      = state.food      || 0;
-  document.getElementById("s-water").textContent     = state.water     || 0;
-  document.getElementById("s-scrap").textContent     = state.scrap     || 0;
-  document.getElementById("s-day").textContent       = state.day       || 1;
+async function loadStats() {
+  try {
+    var results = await Promise.all([
+      fetch("/api/users"),
+      fetch("/api/zones"),
+      fetch("/api/loot")
+    ]);
+
+    var users = await results[0].json();
+    var zones = await results[1].json();
+    var loot  = await results[2].json();
+
+    var survivors = users.filter(function(u) { return u.role !== "admin"; });
+    document.getElementById("s-survivors").textContent = survivors.length;
+
+    var activeZones = zones.filter(function(z) { return z.status === "active"; });
+    document.getElementById("s-zones").textContent = activeZones.length;
+
+    document.getElementById("s-loot").textContent = loot.length;
+
+    var storms = zones.filter(function(z) { return z.radstormActive; });
+    document.getElementById("s-storms").textContent = storms.length;
+    if (storms.length > 0) {
+      document.getElementById("radstorm-alert").style.display = "block";
+    }
+
+    var topCaps = survivors.reduce(function(max, u) { return Math.max(max, u.caps || 0); }, 0);
+    document.getElementById("s-caps").textContent = topCaps.toLocaleString() + " c";
+
+  } catch(err) {
+    console.warn("Could not load live stats:", err);
+  }
+}
+
+loadStats();
 </script>
 </body>
 </html>

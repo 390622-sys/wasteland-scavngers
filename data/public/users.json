@@ -56,24 +56,76 @@
   },
   {
     "id": "user-1779903001691",
-    "username": "fallguy69",
+    "username": "fallguy67",
     "email": "fallguy2626",
     "password": "FYUFDYYUOIU&IUYT*(o",
-    "faction": "Settlers",
+    "faction": "Raiders",
     "role": "user",
     "caps": 100,
     "level": 1,
-    "createdAt": "2026-05-27T17:30:01.647Z"
+    "createdAt": "2026-05-27T17:30:01.647Z",
+    "favoriteWeapon": "",
+    "survivalDays": 1
   },
   {
     "id": "user-1779903242925",
     "username": "Angel",
     "email": "390622@guhsd.net",
     "password": "21212121",
-    "faction": "Raiders",
+    "faction": "Settlers",
     "role": "user",
     "caps": 100,
     "level": 1,
-    "createdAt": "2026-05-27T17:34:02.864Z"
+    "createdAt": "2026-05-27T17:34:02.864Z",
+    "favoriteWeapon": "",
+    "survivalDays": 1
+  },
+  {
+    "id": "user-1779904125481",
+    "username": "fallout123",
+    "email": "fallguy2626",
+    "password": "FYUFDYYUOIU&IUYT*(o",
+    "faction": "Brotherhood",
+    "role": "user",
+    "caps": 100,
+    "level": 1,
+    "createdAt": "2026-05-27T17:48:45.444Z",
+    "favoriteWeapon": "desert egale",
+    "survivalDays": 1
+  },
+  {
+    "id": "user-1779946936606",
+    "username": "mylestheone",
+    "email": "myles123",
+    "password": "123456",
+    "faction": "Brotherhood",
+    "role": "user",
+    "caps": 100,
+    "level": 1,
+    "createdAt": "2026-05-28T05:42:16.389Z",
+    "favoriteWeapon": "sniper rifle",
+    "survivalDays": 1
+  },
+  {
+    "id": "user-1779947627668",
+    "username": "mylestheone",
+    "email": "myles123",
+    "password": "123456",
+    "faction": "Brotherhood",
+    "role": "user",
+    "caps": 100,
+    "level": 1,
+    "createdAt": "2026-05-28T05:53:47.439Z"
+  },
+  {
+    "id": "user-1779948183536",
+    "username": "mylestheone",
+    "email": "myles123",
+    "password": "123456",
+    "faction": "Brotherhood",
+    "role": "user",
+    "caps": 100,
+    "level": 1,
+    "createdAt": "2026-05-28T06:03:03.294Z"
   }
 ]

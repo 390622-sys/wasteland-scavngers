@@ -1,0 +1,57 @@
+[
+  {
+    "id": "zone-001",
+    "name": "The Glowing Crater",
+    "description": "A massive impact crater filled with radioactive waste. Extremely dangerous but loaded with pre-war tech.",
+    "dangerLevel": 8,
+    "lootMultiplier": 3.0,
+    "radstormActive": false,
+    "recommendedLevel": 30,
+    "icon": "☢",
+    "status": "active"
+  },
+  {
+    "id": "zone-002",
+    "name": "Abandoned Supermart",
+    "description": "A gutted superstore on the edge of the old city. Raiders patrol the parking lot.",
+    "dangerLevel": 4,
+    "lootMultiplier": 1.5,
+    "radstormActive": false,
+    "recommendedLevel": 10,
+    "icon": "🏪",
+    "status": "active"
+  },
+  {
+    "id": "zone-003",
+    "name": "Mutant Farmlands",
+    "description": "Overgrown fields outside the city. Mostly harmless mutant animals roam here.",
+    "dangerLevel": 2,
+    "lootMultiplier": 1.0,
+    "radstormActive": false,
+    "recommendedLevel": 1,
+    "icon": "🌾",
+    "status": "active"
+  },
+  {
+    "id": "zone-004",
+    "name": "Sunken Highway",
+    "description": "A collapsed overpass buried under rubble. Flooded tunnels hide pre-war vehicles.",
+    "dangerLevel": 6,
+    "lootMultiplier": 2.0,
+    "radstormActive": true,
+    "recommendedLevel": 20,
+    "icon": "🛣",
+    "status": "active"
+  },
+  {
+    "id": "zone-005",
+    "name": "Vault 77 Entrance",
+    "description": "The sealed blast door of an old Vault-Tec bunker. Nobody has gotten inside. Yet.",
+    "dangerLevel": 9,
+    "lootMultiplier": 4.0,
+    "radstormActive": false,
+    "recommendedLevel": 50,
+    "icon": "🔒",
+    "status": "locked"
+  }
+]
