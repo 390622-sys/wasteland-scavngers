@@ -127,5 +127,22 @@
     "caps": 100,
     "level": 1,
     "createdAt": "2026-05-28T06:03:03.294Z"
+  },
+  {
+    "id": "user-1779990508486",
+    "username": "test1",
+    "email": "32332323@agaabnanaf",
+    "password": "1826bdv1563",
+    "faction": "Raiders",
+    "role": "user",
+    "caps": 100,
+    "level": 1,
+    "radiation": 0,
+    "kills": 0,
+    "mutations": 0,
+    "zonesCleared": 0,
+    "favoriteWeapon": "rifle",
+    "survivalDays": 1,
+    "createdAt": "2026-05-28T17:48:28.475Z"
   }
 ]

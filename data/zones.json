@@ -1,57 +1,57 @@
 [
   {
-    "id": "zone-001",
-    "name": "The Glowing Crater",
-    "description": "A massive impact crater filled with radioactive waste. Extremely dangerous but loaded with pre-war tech.",
-    "dangerLevel": 8,
-    "lootMultiplier": 3.0,
+    "id": "zone-0001",
+    "name": "Abandoned Supermarket",
+    "icon": "🏪",
+    "description": "A pre-war grocery chain. Shelves mostly stripped but the back stockroom is untouched.",
+    "dangerLevel": 2,
+    "lootMultiplier": 1.2,
+    "recommendedLevel": 1,
     "radstormActive": false,
-    "recommendedLevel": 30,
-    "icon": "☢",
-    "status": "active"
+    "status": "open"
   },
   {
-    "id": "zone-002",
-    "name": "Abandoned Supermart",
-    "description": "A gutted superstore on the edge of the old city. Raiders patrol the parking lot.",
+    "id": "zone-0002",
+    "name": "Rusted Highway Bridge",
+    "icon": "🌉",
+    "description": "Raiders have a toll post here. Sneak under or fight through — either way, good scrap above.",
     "dangerLevel": 4,
     "lootMultiplier": 1.5,
+    "recommendedLevel": 2,
     "radstormActive": false,
-    "recommendedLevel": 10,
-    "icon": "🏪",
-    "status": "active"
+    "status": "open"
   },
   {
-    "id": "zone-003",
-    "name": "Mutant Farmlands",
-    "description": "Overgrown fields outside the city. Mostly harmless mutant animals roam here.",
-    "dangerLevel": 2,
-    "lootMultiplier": 1.0,
+    "id": "zone-0003",
+    "name": "The Glowing Crater",
+    "icon": "☢",
+    "description": "A bomb site still hot with radiation. Rare pre-war tech scattered everywhere.",
+    "dangerLevel": 7,
+    "lootMultiplier": 2.5,
+    "recommendedLevel": 5,
     "radstormActive": false,
-    "recommendedLevel": 1,
-    "icon": "🌾",
-    "status": "active"
+    "status": "open"
   },
   {
-    "id": "zone-004",
-    "name": "Sunken Highway",
-    "description": "A collapsed overpass buried under rubble. Flooded tunnels hide pre-war vehicles.",
+    "id": "zone-0004",
+    "name": "Vault 31 Entrance",
+    "icon": "🚪",
+    "description": "The blast door is cracked open. Nobody who went in came back out. Legendary gear awaits.",
+    "dangerLevel": 9,
+    "lootMultiplier": 3.5,
+    "recommendedLevel": 8,
+    "radstormActive": false,
+    "status": "open"
+  },
+  {
+    "id": "zone-0005",
+    "name": "Mutant Swamplands",
+    "icon": "🌿",
+    "description": "Toxic wetlands overrun by feral ghouls and giant insects. Medicine and food are plentiful.",
     "dangerLevel": 6,
     "lootMultiplier": 2.0,
-    "radstormActive": true,
-    "recommendedLevel": 20,
-    "icon": "🛣",
-    "status": "active"
-  },
-  {
-    "id": "zone-005",
-    "name": "Vault 77 Entrance",
-    "description": "The sealed blast door of an old Vault-Tec bunker. Nobody has gotten inside. Yet.",
-    "dangerLevel": 9,
-    "lootMultiplier": 4.0,
+    "recommendedLevel": 4,
     "radstormActive": false,
-    "recommendedLevel": 50,
-    "icon": "🔒",
-    "status": "locked"
+    "status": "open"
   }
 ]
