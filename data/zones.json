@@ -1,57 +1,246 @@
-[
-  {
-    "id": "zone-0001",
-    "name": "Abandoned Supermarket",
-    "icon": "🏪",
-    "description": "A pre-war grocery chain. Shelves mostly stripped but the back stockroom is untouched.",
-    "dangerLevel": 2,
-    "lootMultiplier": 1.2,
-    "recommendedLevel": 1,
-    "radstormActive": false,
-    "status": "open"
-  },
-  {
-    "id": "zone-0002",
-    "name": "Rusted Highway Bridge",
-    "icon": "🌉",
-    "description": "Raiders have a toll post here. Sneak under or fight through — either way, good scrap above.",
-    "dangerLevel": 4,
-    "lootMultiplier": 1.5,
-    "recommendedLevel": 2,
-    "radstormActive": false,
-    "status": "open"
-  },
-  {
-    "id": "zone-0003",
-    "name": "The Glowing Crater",
-    "icon": "☢",
-    "description": "A bomb site still hot with radiation. Rare pre-war tech scattered everywhere.",
-    "dangerLevel": 7,
-    "lootMultiplier": 2.5,
-    "recommendedLevel": 5,
-    "radstormActive": false,
-    "status": "open"
-  },
-  {
-    "id": "zone-0004",
-    "name": "Vault 31 Entrance",
-    "icon": "🚪",
-    "description": "The blast door is cracked open. Nobody who went in came back out. Legendary gear awaits.",
-    "dangerLevel": 9,
-    "lootMultiplier": 3.5,
-    "recommendedLevel": 8,
-    "radstormActive": false,
-    "status": "open"
-  },
-  {
-    "id": "zone-0005",
-    "name": "Mutant Swamplands",
-    "icon": "🌿",
-    "description": "Toxic wetlands overrun by feral ghouls and giant insects. Medicine and food are plentiful.",
-    "dangerLevel": 6,
-    "lootMultiplier": 2.0,
-    "recommendedLevel": 4,
-    "radstormActive": false,
-    "status": "open"
-  }
-]
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Zone — Wasteland Scavenger</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap');
+    :root {
+      --amber:#f0c030;--green:#39ff14;--red:#ff4040;--blue:#30c0ff;
+      --bg:#060d14;--bg2:#0d1820;--bg3:#111f2a;--border:#1e3448;
+      --text:#c8d8e0;--dim:#506070;
+      --mono:'Share Tech Mono',monospace;--ui:'Rajdhani',sans-serif;
+    }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--bg);color:var(--text);font-family:var(--mono);min-height:100vh;overflow-x:hidden;}
+    .zone-hero{position:relative;width:100%;padding:80px 40px 40px;overflow:hidden;border-bottom:2px solid var(--border);}
+    .zone-hero::before{content:'';position:absolute;inset:0;background:var(--hero-color,rgba(240,192,48,0.04));pointer-events:none;}
+    .zone-hero::after{content:'';position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.12) 3px,rgba(0,0,0,0.12) 4px);pointer-events:none;animation:scanMove 8s linear infinite;}
+    @keyframes scanMove{from{background-position:0 0;}to{background-position:0 100px;}}
+    .hero-inner{position:relative;z-index:1;max-width:900px;margin:0 auto;display:flex;align-items:flex-start;gap:24px;}
+    .zone-big-icon{font-size:72px;line-height:1;filter:drop-shadow(0 0 20px currentColor);flex-shrink:0;}
+    .zone-hero-text h1{font-family:var(--ui);font-size:2.8rem;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:.1em;line-height:1;text-shadow:0 0 30px rgba(240,192,48,.4);}
+    .zone-hero-text .zone-desc{font-size:.82rem;color:var(--dim);line-height:1.7;margin-top:10px;max-width:500px;}
+    .zone-badges{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;}
+    .zbadge{padding:4px 12px;border-radius:3px;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;font-family:var(--ui);font-weight:600;border:1px solid;}
+    .zbadge-danger{border-color:var(--red);color:var(--red);background:rgba(255,64,64,.08);}
+    .zbadge-loot{border-color:var(--amber);color:var(--amber);background:rgba(240,192,48,.08);}
+    .zbadge-storm{border-color:#ff6030;color:#ff6030;background:rgba(255,96,48,.08);animation:stormPulse 1.5s ease-in-out infinite;}
+    @keyframes stormPulse{0%,100%{opacity:1;}50%{opacity:.5;}}
+    .timer-bar-wrap{position:sticky;top:56px;z-index:50;background:var(--bg);border-bottom:1px solid var(--border);padding:10px 40px;display:flex;align-items:center;gap:16px;}
+    .timer-label{font-size:.7rem;letter-spacing:.2em;color:var(--dim);text-transform:uppercase;white-space:nowrap;}
+    .timer-track{flex:1;height:8px;background:var(--border);border-radius:4px;overflow:hidden;}
+    .timer-fill{height:100%;background:var(--green);border-radius:4px;transition:width 1s linear,background 1s;box-shadow:0 0 8px var(--green);width:100%;}
+    .timer-fill.warning{background:var(--amber);box-shadow:0 0 8px var(--amber);}
+    .timer-fill.danger{background:var(--red);box-shadow:0 0 8px var(--red);animation:timerFlash .5s ease-in-out infinite;}
+    @keyframes timerFlash{0%,100%{opacity:1;}50%{opacity:.4;}}
+    .timer-count{font-family:var(--ui);font-size:1.4rem;font-weight:700;color:var(--green);min-width:40px;text-align:right;transition:color 1s;}
+    .timer-count.warning{color:var(--amber);}
+    .timer-count.danger{color:var(--red);}
+    .zone-body{max-width:900px;margin:0 auto;padding:32px 40px 60px;display:grid;grid-template-columns:1fr 360px;gap:24px;align-items:start;}
+    @media(max-width:700px){.zone-body{grid-template-columns:1fr;padding:20px;}.zone-hero{padding:70px 20px 30px;}.hero-inner{flex-direction:column;}.zone-big-icon{font-size:48px;}.zone-hero-text h1{font-size:2rem;}.timer-bar-wrap{padding:10px 20px;}}
+    .search-panel{background:var(--bg2);border:1px solid var(--border);border-radius:6px;overflow:hidden;}
+    .panel-head{padding:14px 18px;border-bottom:1px solid var(--border);font-family:var(--ui);font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);}
+    .search-area-btn{display:block;width:100%;padding:18px;background:none;border:none;border-bottom:1px solid var(--border);cursor:pointer;position:relative;overflow:hidden;transition:background .2s;}
+    .search-area-btn:disabled{opacity:.4;cursor:not-allowed;}
+    .search-area-btn:not(:disabled):hover{background:rgba(240,192,48,.05);}
+    .search-area-btn::after{content:'';position:absolute;inset:0;background:rgba(240,192,48,.08);transform:scaleX(0);transform-origin:left;transition:transform 0s;}
+    .search-area-btn.searching::after{transform:scaleX(1);transition:transform var(--search-duration,1.5s) linear;}
+    .search-btn-inner{display:flex;align-items:center;justify-content:center;gap:10px;font-family:var(--ui);font-size:1rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--amber);position:relative;z-index:1;}
+    .search-btn-icon{font-size:1.4rem;}
+    .search-cooldown{font-size:.7rem;color:var(--dim);text-align:center;padding:6px 18px 10px;font-family:var(--mono);}
+    .spots-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);}
+    .spot{background:var(--bg2);aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:1.4rem;cursor:default;transition:background .2s;position:relative;overflow:hidden;}
+    .spot-label{font-size:.58rem;letter-spacing:.1em;color:var(--dim);font-family:var(--ui);text-transform:uppercase;}
+    .spot.active{background:rgba(240,192,48,.1);animation:spotPulse .6s ease;}
+    .spot.searched{background:rgba(57,255,20,.05);}
+    .spot.searched .spot-label{color:var(--green);}
+    @keyframes spotPulse{0%{background:rgba(240,192,48,.3);}100%{background:rgba(240,192,48,.1);}}
+    .loot-log{display:flex;flex-direction:column;gap:0;}
+    .loot-entry{display:flex;align-items:center;gap:12px;padding:12px 18px;border-bottom:1px solid var(--border);animation:slideIn .3s ease both;}
+    @keyframes slideIn{from{opacity:0;transform:translateX(-8px);}to{opacity:1;transform:translateX(0);}}
+    .loot-entry:last-child{border-bottom:none;}
+    .loot-icon{font-size:1.5rem;width:32px;text-align:center;flex-shrink:0;}
+    .loot-info{flex:1;}
+    .loot-name{font-family:var(--ui);font-size:.9rem;font-weight:700;color:var(--text);}
+    .loot-meta{font-size:.67rem;color:var(--dim);letter-spacing:.1em;text-transform:uppercase;margin-top:2px;}
+    .loot-value{font-size:.8rem;color:var(--amber);white-space:nowrap;}
+    .rarity-common{color:#8ab4c0;}.rarity-uncommon{color:#4a90d9;}.rarity-rare{color:#a855f7;}.rarity-legendary{color:#f5c518;text-shadow:0 0 8px #f5c518;}
+    .empty-log{padding:24px 18px;font-size:.75rem;color:var(--dim);text-align:center;letter-spacing:.08em;}
+    .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:12px 20px;font-family:var(--mono);font-size:.8rem;z-index:500;transition:transform .3s ease,opacity .3s;opacity:0;white-space:nowrap;max-width:90vw;}
+    .toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
+    .toast.bad{border-color:var(--red);color:#ff8080;}
+    .toast.good{border-color:var(--green);color:var(--green);}
+    .evac-overlay{display:none;position:fixed;inset:0;background:rgba(6,13,20,.97);z-index:600;flex-direction:column;align-items:center;justify-content:center;gap:20px;text-align:center;}
+    .evac-overlay.active{display:flex;}
+    .evac-icon{font-size:5rem;animation:evacPulse .8s ease-in-out infinite;}
+    @keyframes evacPulse{0%,100%{transform:scale(1);}50%{transform:scale(1.15);}}
+    .evac-title{font-family:var(--ui);font-size:2.5rem;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:.2em;text-shadow:0 0 30px var(--red);}
+    .evac-sub{font-size:.8rem;color:var(--dim);letter-spacing:.1em;}
+    .evac-summary{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:16px 28px;font-size:.85rem;color:var(--text);margin-top:8px;}
+    .evac-summary span{color:var(--amber);font-family:var(--ui);font-size:1.1rem;font-weight:700;}
+    .evac-btn{background:var(--amber);color:#000;border:none;font-family:var(--ui);font-weight:700;font-size:.9rem;letter-spacing:.15em;text-transform:uppercase;padding:13px 32px;border-radius:4px;cursor:pointer;margin-top:10px;transition:background .2s;}
+    .evac-btn:hover{background:#ffd840;}
+  </style>
+</head>
+<body>
+<script src="nav.js"></script>
+<div class="evac-overlay" id="evac-overlay">
+  <div class="evac-icon">🚨</div>
+  <div class="evac-title">Evacuate!</div>
+  <div class="evac-sub">Time's up — your scout is pulling out</div>
+  <div class="evac-summary" id="evac-summary">
+    Items collected: <span id="evac-count">0</span> &nbsp;·&nbsp; Caps earned: <span id="evac-caps">0</span>
+  </div>
+  <button class="evac-btn" onclick="window.location.href='expedition.html'">⚡ Return to Base</button>
+</div>
+<div class="toast" id="toast"></div>
+<div class="zone-hero" id="zone-hero">
+  <div class="hero-inner">
+    <div class="zone-big-icon" id="zone-icon">☢</div>
+    <div class="zone-hero-text">
+      <h1 id="zone-name">Loading Zone...</h1>
+      <div class="zone-desc" id="zone-desc"></div>
+      <div class="zone-badges" id="zone-badges"></div>
+    </div>
+  </div>
+</div>
+<div class="timer-bar-wrap">
+  <div class="timer-label">⏱ Time Remaining</div>
+  <div class="timer-track"><div class="timer-fill" id="timer-fill"></div></div>
+  <div class="timer-count" id="timer-count">60</div>
+</div>
+<div class="zone-body">
+  <div>
+    <div class="search-panel">
+      <div class="panel-head">// items collected this run</div>
+      <div class="loot-log" id="loot-log">
+        <div class="empty-log" id="empty-log">No items yet — search the area!</div>
+      </div>
+    </div>
+  </div>
+  <div>
+    <div class="search-panel">
+      <div class="panel-head">// zone areas</div>
+      <button class="search-area-btn" id="search-btn">
+        <div class="search-btn-inner">
+          <span class="search-btn-icon">🔦</span>
+          <span id="search-btn-label">Search Area</span>
+        </div>
+      </button>
+      <div class="search-cooldown" id="cooldown-label">&nbsp;</div>
+      <div class="spots-grid" id="spots-grid"></div>
+    </div>
+  </div>
+</div>
+<script>
+var ZONE_SPOTS=[{icon:"📦",label:"Crates"},{icon:"🚪",label:"Locker"},{icon:"🪨",label:"Rubble"},{icon:"🚗",label:"Car Wreck"},{icon:"🗑",label:"Dumpster"},{icon:"🏗",label:"Scaffolding"},{icon:"🧰",label:"Toolbox"},{icon:"🛢",label:"Barrel"},{icon:"💀",label:"Corpse"}];
+var LOOT={food:[{name:"Canned Brahmin Stew",icon:"🥫",desc:"Two-headed cow stew."},{name:"Mutant Mushroom",icon:"🍄",desc:"Glows faintly."},{name:"Purified Water",icon:"💧",desc:"Filtered pre-war water."},{name:"Squirrel Jerky",icon:"🐿",desc:"Chewy wasteland snack."}],material:[{name:"Scrap Metal",icon:"🔧",desc:"Pre-war steel chunks."},{name:"Duct Tape",icon:"🧰",desc:"Holds the wasteland together."},{name:"Copper Wire",icon:"⚡",desc:"Salvaged wiring."},{name:"Water Filter",icon:"🔩",desc:"Still functional."}],weapon:[{name:"Rusty Pipe Wrench",icon:"🔨",desc:"Heavy but effective."},{name:"Laser Pistol",icon:"🔫",desc:"Pre-war energy weapon."},{name:"Sawed-Off Shotgun",icon:"💥",desc:"Very messy range."},{name:"Combat Knife",icon:"🗡",desc:"Military blade."}],medicine:[{name:"Rad-Away",icon:"💊",desc:"Flushes radiation."},{name:"Stimpak",icon:"💉",desc:"Instant healing."},{name:"Bandage Roll",icon:"🩹",desc:"Basic wound dressing."}],armor:[{name:"Leather Jacket",icon:"🧥",desc:"Some protection."},{name:"Riot Helmet",icon:"⛑",desc:"Cracked visor."},{name:"Power Armor Gauntlet",icon:"🦾",desc:"Heavy but powerful."}]};
+var currentUser=JSON.parse(localStorage.getItem("currentUser")||"null");
+var currentZone=null,timeLeft=60,timerInterval=null,isCoolingDown=false,itemsFound=[],capsEarned=0,currentSpotIdx=0;
+window.addEventListener("DOMContentLoaded",async function(){
+  if(!currentUser){window.location.href="register.html";return;}
+  var params=new URLSearchParams(window.location.search);
+  var zoneId=params.get("id");
+  if(!zoneId){window.location.href="expedition.html";return;}
+  try{var res=await fetch("/api/zones");var zones=await res.json();currentZone=zones.find(function(z){return z.id===zoneId;});}catch(e){}
+  if(!currentZone){window.location.href="expedition.html";return;}
+  renderZone();buildSpots();startTimer();
+  document.getElementById("search-btn").addEventListener("click",doSearch);
+});
+function renderZone(){
+  document.title=currentZone.name+" — Wasteland Scavenger";
+  document.getElementById("zone-icon").textContent=currentZone.icon||"☢";
+  document.getElementById("zone-name").textContent=currentZone.name;
+  document.getElementById("zone-desc").textContent=currentZone.description;
+  var d=currentZone.dangerLevel;
+  var tint=d>=8?"rgba(255,64,64,0.06)":d>=5?"rgba(255,140,30,0.05)":"rgba(240,192,48,0.04)";
+  document.getElementById("zone-hero").style.setProperty("--hero-color",tint);
+  document.getElementById("zone-badges").innerHTML='<span class="zbadge zbadge-danger">☠ Danger '+d+'/10</span><span class="zbadge zbadge-loot">⚡ Loot x'+currentZone.lootMultiplier+'</span>'+(currentZone.radstormActive?'<span class="zbadge zbadge-storm">⚡ Radstorm Active</span>':'');
+}
+function buildSpots(){
+  var grid=document.getElementById("spots-grid");grid.innerHTML="";
+  ZONE_SPOTS.forEach(function(s,i){var d=document.createElement("div");d.className="spot";d.id="spot-"+i;d.innerHTML='<span>'+s.icon+'</span><span class="spot-label">'+s.label+'</span>';grid.appendChild(d);});
+}
+function startTimer(){
+  updateTimerUI();
+  timerInterval=setInterval(function(){timeLeft--;updateTimerUI();if(timeLeft<=0){clearInterval(timerInterval);triggerEvacuation();}},1000);
+}
+function updateTimerUI(){
+  var fill=document.getElementById("timer-fill");var count=document.getElementById("timer-count");
+  fill.style.width=(timeLeft/60*100)+"%";count.textContent=timeLeft;
+  var s=timeLeft<=10?"danger":timeLeft<=25?"warning":"";
+  fill.className="timer-fill"+(s?" "+s:"");count.className="timer-count"+(s?" "+s:"");
+}
+function doSearch(){
+  if(isCoolingDown||timeLeft<=0)return;
+  var btn=document.getElementById("search-btn");var label=document.getElementById("search-btn-label");var cooldownEl=document.getElementById("cooldown-label");
+  var spotEl=document.getElementById("spot-"+(currentSpotIdx%ZONE_SPOTS.length));
+  if(spotEl)spotEl.classList.add("active");
+  var duration=1200+Math.random()*800;
+  btn.style.setProperty("--search-duration",duration+"ms");
+  btn.classList.add("searching");btn.disabled=true;label.textContent="Searching...";isCoolingDown=true;
+  setTimeout(function(){
+    btn.classList.remove("searching");
+    if(spotEl)spotEl.classList.add("searched");
+    currentSpotIdx++;
+    handleOutcome(rollOutcome());
+    var cooldown=2000+currentZone.dangerLevel*200;var remaining=Math.ceil(cooldown/1000);
+    var ct=setInterval(function(){remaining--;cooldownEl.textContent=remaining>0?"Next search in "+remaining+"s...":"";if(remaining<=0){clearInterval(ct);if(timeLeft>0){btn.disabled=false;label.textContent="Search Area";isCoolingDown=false;}}},1000);
+  },duration);
+}
+function rollOutcome(){
+  var d=currentZone.dangerLevel;var r=Math.random()*100;
+  if(r<d*5){return{type:"injury",rad:Math.floor(Math.random()*d)+3};}
+  if(r<d*5+20){return{type:"empty"};}
+  return{type:"loot",item:generateLoot()};
+}
+function handleOutcome(o){
+  if(o.type==="injury"){applyRadiation(o.rad);showToast("☢ Radiation +"+o.rad+"% — watch yourself!","bad");}
+  else if(o.type==="empty"){showToast("🔍 Nothing here. Keep searching...","");}
+  else if(o.type==="loot"){saveAndLogItem(o.item);}
+}
+function generateLoot(){
+  var m=currentZone.lootMultiplier;
+  var types=["food","material","food","material","medicine"];
+  if(m>=1.5)types.push("weapon");if(m>=2.0)types.push("armor","weapon");if(m>=3.0)types.push("weapon","armor","weapon");
+  var type=types[Math.floor(Math.random()*types.length)];
+  var tpl=LOOT[type][Math.floor(Math.random()*LOOT[type].length)];
+  var rarity=rollRarity(m);
+  var vb={common:10,uncommon:40,rare:120,legendary:400};
+  return{userId:currentUser.id,name:tpl.name,icon:tpl.icon,type:type,rarity:rarity,capsValue:Math.floor(vb[rarity]*m*(0.8+Math.random()*0.4)),weight:Math.floor(Math.random()*5)+1,description:tpl.desc,foundInZone:currentZone.id};
+}
+function rollRarity(m){var r=Math.random()*100;var s=(m-1)*8;if(r<5+s)return"legendary";if(r<20+s)return"rare";if(r<50+s)return"uncommon";return"common";}
+async function saveAndLogItem(item){
+  try{var res=await fetch("/api/loot",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(item)});var saved=await res.json();itemsFound.push(saved);capsEarned+=saved.capsValue||0;addToLog(saved);showToast("✅ Found: "+saved.name+" ("+saved.rarity+")","good");}
+  catch(e){itemsFound.push(item);capsEarned+=item.capsValue||0;addToLog(item);showToast("✅ Found: "+item.name+" (offline)","good");}
+}
+function addToLog(item){
+  var log=document.getElementById("loot-log");var empty=document.getElementById("empty-log");if(empty)empty.remove();
+  var e=document.createElement("div");e.className="loot-entry";
+  e.innerHTML='<div class="loot-icon">'+(item.icon||"📦")+'</div><div class="loot-info"><div class="loot-name">'+item.name+'</div><div class="loot-meta"><span class="rarity-'+item.rarity+'">'+item.rarity.toUpperCase()+'</span> · '+item.type+'</div></div><div class="loot-value">'+(item.capsValue||0)+' ¢</div>';
+  log.insertBefore(e,log.firstChild);
+}
+function applyRadiation(amount){
+  if(!currentUser)return;
+  currentUser.radiation=Math.min(100,(currentUser.radiation||0)+amount);
+  localStorage.setItem("currentUser",JSON.stringify(currentUser));
+  fetch("/api/users/"+currentUser.id,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({radiation:currentUser.radiation})}).catch(function(){});
+}
+function triggerEvacuation(){
+  clearInterval(timerInterval);document.getElementById("search-btn").disabled=true;
+  if(currentUser&&itemsFound.length>0){currentUser.zonesCleared=(currentUser.zonesCleared||0)+1;localStorage.setItem("currentUser",JSON.stringify(currentUser));fetch("/api/users/"+currentUser.id,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({zonesCleared:currentUser.zonesCleared})}).catch(function(){});}
+  document.getElementById("evac-count").textContent=itemsFound.length;
+  document.getElementById("evac-caps").textContent=capsEarned+" ¢";
+  document.getElementById("evac-overlay").classList.add("active");
+}
+var toastTimer=null;
+function showToast(msg,type){
+  var t=document.getElementById("toast");t.textContent=msg;t.className="toast show"+(type?" "+type:"");
+  if(toastTimer)clearTimeout(toastTimer);toastTimer=setTimeout(function(){t.className="toast";},2800);
+}
+</script>
+</body>
+</html>

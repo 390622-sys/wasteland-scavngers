@@ -126,7 +126,9 @@
     "role": "user",
     "caps": 100,
     "level": 1,
-    "createdAt": "2026-05-28T06:03:03.294Z"
+    "createdAt": "2026-05-28T06:03:03.294Z",
+    "radiation": 10,
+    "zonesCleared": 2
   },
   {
     "id": "user-1779990508486",

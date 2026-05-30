@@ -6,720 +6,433 @@
   <title>Expedition - Wasteland Scavenger</title>
   <link rel="stylesheet" href="style.css" />
   <style>
-    /* ── Scanning animation overlay ── */
-    .scanning-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(6, 13, 20, 0.92);
-      z-index: 200;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 24px;
-    }
-    .scanning-overlay.active { display: flex; }
+    /* Zone grid */
+    .zone-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-bottom:32px;}
+    .zone-card{background:#0d1820;border:1px solid #1e3448;border-radius:6px;padding:20px;display:flex;flex-direction:column;gap:14px;transition:border-color .2s,transform .2s;}
+    .zone-card:hover{border-color:#f0c03066;transform:translateY(-2px);}
+    .zone-card.danger-high{border-color:#7a2020;}
+    .zone-top{display:flex;align-items:flex-start;gap:14px;}
+    .zone-icon{font-size:36px;flex-shrink:0;line-height:1;}
+    .zone-name{font-family:'Rajdhani',sans-serif;font-size:1.1rem;font-weight:700;color:#f0c030;text-transform:uppercase;letter-spacing:.06em;}
+    .zone-desc{font-size:.75rem;color:#506070;line-height:1.6;margin-top:4px;}
+    .zone-stats{display:flex;gap:8px;flex-wrap:wrap;}
+    .zstat{background:#060d14;border:1px solid #1e3448;border-radius:3px;padding:5px 10px;font-size:.65rem;color:#506070;font-family:'Share Tech Mono',monospace;}
+    .zstat strong{display:block;font-size:.9rem;font-family:'Rajdhani',sans-serif;font-weight:700;margin-top:1px;}
+    .zstat strong.r{color:#ff6060;}.zstat strong.g{color:#39ff14;}.zstat strong.y{color:#f0c030;}.zstat strong.b{color:#4a90d9;}
+    .enter-btn{display:flex;align-items:center;justify-content:center;gap:8px;background:#f0c030;color:#000;border:none;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:.85rem;letter-spacing:.12em;text-transform:uppercase;padding:12px;border-radius:4px;cursor:pointer;transition:background .15s;width:100%;}
+    .enter-btn:hover{background:#ffd840;}
 
-    .scan-icon {
-      font-size: 64px;
-      animation: spin 1.2s linear infinite;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
+    /* ── Active zone scavenge view ── */
+    #zone-view{display:none;}
+    .zone-hero{position:relative;width:100%;padding:28px 0 24px;overflow:hidden;border-bottom:2px solid #1e3448;margin-bottom:24px;}
+    .zone-hero-inner{display:flex;align-items:flex-start;gap:18px;}
+    .zh-icon{font-size:56px;line-height:1;flex-shrink:0;}
+    .zh-name{font-family:'Rajdhani',sans-serif;font-size:2rem;font-weight:700;color:#f0c030;text-transform:uppercase;letter-spacing:.08em;line-height:1;}
+    .zh-desc{font-size:.78rem;color:#506070;margin-top:6px;line-height:1.6;}
+    .zh-badges{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
+    .zbadge{padding:3px 10px;border-radius:3px;font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;font-family:'Rajdhani',sans-serif;font-weight:600;border:1px solid;}
+    .zb-danger{border-color:#ff4040;color:#ff4040;background:rgba(255,64,64,.08);}
+    .zb-loot{border-color:#f0c030;color:#f0c030;background:rgba(240,192,48,.08);}
 
-    .scan-title {
-      font-family: var(--font-display, 'Rajdhani', sans-serif);
-      font-size: 22px;
-      font-weight: 700;
-      color: var(--yellow);
-      text-transform: uppercase;
-      letter-spacing: 0.15em;
-    }
+    /* Timer */
+    .timer-wrap{display:flex;align-items:center;gap:14px;margin-bottom:24px;background:#0d1820;border:1px solid #1e3448;border-radius:6px;padding:12px 18px;}
+    .timer-label{font-size:.68rem;letter-spacing:.2em;color:#506070;text-transform:uppercase;white-space:nowrap;}
+    .timer-track{flex:1;height:8px;background:#1e3448;border-radius:4px;overflow:hidden;}
+    .timer-fill{height:100%;background:#39ff14;border-radius:4px;transition:width 1s linear;box-shadow:0 0 8px #39ff14;width:100%;}
+    .timer-fill.warn{background:#f0c030;box-shadow:0 0 8px #f0c030;}
+    .timer-fill.crit{background:#ff4040;box-shadow:0 0 8px #ff4040;animation:tflash .5s infinite;}
+    @keyframes tflash{0%,100%{opacity:1;}50%{opacity:.4;}}
+    .timer-num{font-family:'Rajdhani',sans-serif;font-size:1.5rem;font-weight:700;color:#39ff14;min-width:36px;text-align:right;}
+    .timer-num.warn{color:#f0c030;}.timer-num.crit{color:#ff4040;}
 
-    .scan-bar-wrap {
-      width: 280px;
-      height: 6px;
-      background: var(--border);
-      border-radius: 3px;
-      overflow: hidden;
-    }
-    .scan-bar-fill {
-      height: 100%;
-      background: var(--yellow);
-      border-radius: 3px;
-      width: 0%;
-      transition: width 0.1s linear;
-      box-shadow: 0 0 10px var(--yellow);
-    }
+    /* Scavenge layout */
+    .scav-layout{display:grid;grid-template-columns:1fr 320px;gap:20px;align-items:start;}
+    @media(max-width:680px){.scav-layout{grid-template-columns:1fr;}}
 
-    .scan-log {
-      font-family: var(--font-mono);
-      font-size: 12px;
-      color: var(--text-dim);
-      text-align: center;
-      letter-spacing: 0.06em;
-      min-height: 18px;
-    }
+    /* Loot log */
+    .loot-panel{background:#0d1820;border:1px solid #1e3448;border-radius:6px;overflow:hidden;}
+    .loot-panel-head{padding:12px 16px;border-bottom:1px solid #1e3448;font-size:.68rem;letter-spacing:.2em;color:#506070;text-transform:uppercase;font-family:'Rajdhani',sans-serif;}
+    .loot-entry{display:flex;align-items:center;gap:12px;padding:11px 16px;border-bottom:1px solid #1e3448;animation:slidein .25s ease;}
+    @keyframes slidein{from{opacity:0;transform:translateX(-6px);}to{opacity:1;transform:translateX(0);}}
+    .loot-entry:last-child{border-bottom:none;}
+    .li-icon{font-size:1.4rem;width:30px;text-align:center;flex-shrink:0;}
+    .li-info{flex:1;}
+    .li-name{font-family:'Rajdhani',sans-serif;font-size:.9rem;font-weight:700;color:#c8d8e0;}
+    .li-meta{font-size:.62rem;color:#506070;letter-spacing:.1em;text-transform:uppercase;margin-top:1px;}
+    .li-val{font-size:.78rem;color:#f0c030;white-space:nowrap;}
+    .rc{color:#8ab4c0;}.ru{color:#4a90d9;}.rr{color:#a855f7;}.rl{color:#f5c518;text-shadow:0 0 6px #f5c518;}
+    .empty-log{padding:20px 16px;font-size:.72rem;color:#506070;text-align:center;}
 
-    /* ── Result Modal ── */
-    .modal-backdrop {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(6, 13, 20, 0.88);
-      z-index: 300;
-      align-items: center;
-      justify-content: center;
-    }
-    .modal-backdrop.active { display: flex; }
+    /* Search panel */
+    .search-panel{background:#0d1820;border:1px solid #1e3448;border-radius:6px;overflow:hidden;}
+    .search-panel-head{padding:12px 16px;border-bottom:1px solid #1e3448;font-size:.68rem;letter-spacing:.2em;color:#506070;text-transform:uppercase;font-family:'Rajdhani',sans-serif;}
+    .search-btn{display:block;width:100%;padding:16px;background:none;border:none;border-bottom:1px solid #1e3448;cursor:pointer;position:relative;overflow:hidden;transition:background .2s;}
+    .search-btn:disabled{opacity:.4;cursor:not-allowed;}
+    .search-btn:not(:disabled):hover{background:rgba(240,192,48,.05);}
+    .search-btn::after{content:'';position:absolute;inset:0;background:rgba(240,192,48,.08);transform:scaleX(0);transform-origin:left;transition:transform 0s;}
+    .search-btn.scanning::after{transform:scaleX(1);transition:transform var(--dur,1.5s) linear;}
+    .search-btn-inner{display:flex;align-items:center;justify-content:center;gap:10px;font-family:'Rajdhani',sans-serif;font-size:1rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#f0c030;position:relative;z-index:1;}
+    .cooldown-txt{font-size:.68rem;color:#506070;text-align:center;padding:6px 16px 8px;font-family:'Share Tech Mono',monospace;}
+    .spots-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:#1e3448;}
+    .spot{background:#0d1820;aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:1.3rem;}
+    .spot-lbl{font-size:.55rem;color:#506070;font-family:'Rajdhani',sans-serif;text-transform:uppercase;letter-spacing:.08em;}
+    .spot.lit{background:rgba(240,192,48,.12);animation:spotpop .5s ease;}
+    .spot.done{background:rgba(57,255,20,.05);}
+    .spot.done .spot-lbl{color:#39ff14;}
+    @keyframes spotpop{0%{background:rgba(240,192,48,.3);}100%{background:rgba(240,192,48,.12);}}
 
-    .modal {
-      background: var(--bg2, #142233);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      width: 100%;
-      max-width: 440px;
-      margin: 20px;
-      overflow: hidden;
-      animation: popIn 0.25s ease;
-    }
-    @keyframes popIn {
-      from { transform: scale(0.9); opacity: 0; }
-      to   { transform: scale(1);   opacity: 1; }
-    }
+    /* Toast */
+    .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(60px);background:#0d1820;border:1px solid #1e3448;border-radius:6px;padding:10px 18px;font-size:.78rem;font-family:'Share Tech Mono',monospace;z-index:999;transition:transform .25s,opacity .25s;opacity:0;white-space:nowrap;max-width:90vw;}
+    .toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
+    .toast.bad{border-color:#ff4040;color:#ff8080;}
+    .toast.good{border-color:#39ff14;color:#39ff14;}
 
-    .modal-header {
-      padding: 16px 20px;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .modal-header-icon { font-size: 28px; }
-    .modal-header-title {
-      font-family: var(--font-display, 'Rajdhani', sans-serif);
-      font-size: 16px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-    }
-    .modal-body { padding: 20px; }
-    .modal-footer {
-      padding: 14px 20px;
-      border-top: 1px solid var(--border);
-      display: flex;
-      gap: 10px;
-      justify-content: flex-end;
-    }
-
-    .item-name {
-      font-family: var(--font-display, 'Rajdhani', sans-serif);
-      font-size: 22px;
-      font-weight: 700;
-      color: var(--yellow);
-      margin-bottom: 4px;
-    }
-    .item-meta {
-      font-family: var(--font-mono);
-      font-size: 11px;
-      color: var(--text-dim);
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      margin-bottom: 14px;
-    }
-    .item-desc {
-      font-family: var(--font-mono);
-      font-size: 13px;
-      color: var(--text);
-      line-height: 1.7;
-      margin-bottom: 16px;
-    }
-
-    .rarity-common    { color: #aaa; }
-    .rarity-uncommon  { color: #4a90d9; }
-    .rarity-rare      { color: #a855f7; }
-    .rarity-legendary { color: #f5c518; text-shadow: 0 0 10px #f5c518; }
-
-    .consequence-box {
-      padding: 10px 14px;
-      border-radius: 4px;
-      font-family: var(--font-mono);
-      font-size: 12px;
-      margin-top: 10px;
-    }
-    .consequence-box.bad {
-      background: rgba(192, 57, 43, 0.1);
-      border: 1px solid #7a3030;
-      color: #e07070;
-    }
-    .consequence-box.good {
-      background: rgba(39, 174, 96, 0.08);
-      border: 1px solid #1a5a30;
-      color: #6be09a;
-    }
-
-    /* ── Zone cards ── */
-    .zone-card {
-      background: var(--bg2, #142233);
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-    .zone-card.radstorm { border-color: #7a3030; }
-
-    .zone-top {
-      display: flex;
-      align-items: flex-start;
-      gap: 12px;
-    }
-    .zone-icon { font-size: 32px; flex-shrink: 0; }
-    .zone-name {
-      font-family: var(--font-display, 'Rajdhani', sans-serif);
-      font-size: 17px;
-      font-weight: 700;
-      color: var(--yellow);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-    .zone-desc {
-      font-family: var(--font-mono);
-      font-size: 12px;
-      color: var(--text-dim);
-      line-height: 1.6;
-    }
-
-    .zone-stats {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-    .zone-stat {
-      background: var(--bg, #0d1b2a);
-      border: 1px solid var(--border);
-      border-radius: 3px;
-      padding: 6px 12px;
-      font-family: var(--font-mono);
-      font-size: 11px;
-      color: var(--text-dim);
-    }
-    .zone-stat span {
-      font-family: var(--font-display, 'Rajdhani', sans-serif);
-      font-size: 15px;
-      font-weight: 700;
-      color: var(--yellow);
-      display: block;
-      margin-top: 1px;
-    }
-    .zone-stat span.red   { color: #e07070; }
-    .zone-stat span.green { color: #6be09a; }
-    .zone-stat span.blue  { color: #4a90d9; }
-
-    .storm-badge {
-      display: inline-block;
-      background: rgba(192,57,43,0.15);
-      border: 1px solid #7a3030;
-      color: #e07070;
-      font-family: var(--font-mono);
-      font-size: 10px;
-      padding: 3px 8px;
-      border-radius: 3px;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-    }
-
-    .locked-overlay {
-      opacity: 0.4;
-      pointer-events: none;
-    }
-    .locked-tag {
-      font-family: var(--font-mono);
-      font-size: 11px;
-      color: var(--text-dim);
-      border: 1px solid var(--border);
-      padding: 8px 14px;
-      border-radius: 4px;
-      text-align: center;
-      letter-spacing: 0.08em;
-    }
-
-    /* Recent finds log */
-    .find-entry {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 10px 0;
-      border-bottom: 1px solid rgba(30,58,85,0.4);
-      animation: slideIn 0.3s ease;
-    }
-    @keyframes slideIn {
-      from { opacity:0; transform: translateX(-10px); }
-      to   { opacity:1; transform: translateX(0); }
-    }
-    .find-entry:last-child { border-bottom: none; }
-    .find-badge {
-      font-size: 20px;
-      width: 36px;
-      text-align: center;
-      flex-shrink: 0;
-    }
-    .find-info { flex: 1; }
-    .find-name {
-      font-family: var(--font-display, 'Rajdhani', sans-serif);
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--text);
-    }
-    .find-sub {
-      font-family: var(--font-mono);
-      font-size: 11px;
-      color: var(--text-dim);
-      letter-spacing: 0.06em;
-    }
-    .find-value {
-      font-family: var(--font-mono);
-      font-size: 12px;
-      color: var(--yellow);
-    }
+    /* Evac overlay */
+    .evac{display:none;position:fixed;inset:0;background:rgba(6,13,20,.97);z-index:800;flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center;padding:20px;}
+    .evac.show{display:flex;}
+    .evac-icon{font-size:4.5rem;animation:epulse .8s ease-in-out infinite;}
+    @keyframes epulse{0%,100%{transform:scale(1);}50%{transform:scale(1.12);}}
+    .evac-title{font-family:'Rajdhani',sans-serif;font-size:2.2rem;font-weight:700;color:#ff4040;text-transform:uppercase;letter-spacing:.2em;text-shadow:0 0 24px #ff4040;}
+    .evac-sub{font-size:.75rem;color:#506070;letter-spacing:.1em;}
+    .evac-box{background:#0d1820;border:1px solid #1e3448;border-radius:6px;padding:14px 24px;font-size:.85rem;color:#c8d8e0;}
+    .evac-box span{color:#f0c030;font-family:'Rajdhani',sans-serif;font-size:1.1rem;font-weight:700;}
+    .evac-btn{background:#f0c030;color:#000;border:none;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:.85rem;letter-spacing:.15em;text-transform:uppercase;padding:12px 28px;border-radius:4px;cursor:pointer;transition:background .15s;}
+    .evac-btn:hover{background:#ffd840;}
   </style>
 </head>
 <body>
 <script src="nav.js"></script>
 
-<!-- ── Scanning Animation Overlay ── -->
-<div class="scanning-overlay" id="scanning-overlay">
-  <div class="scan-icon">☢</div>
-  <div class="scan-title" id="scan-title">Scanning Zone...</div>
-  <div class="scan-bar-wrap">
-    <div class="scan-bar-fill" id="scan-bar"></div>
-  </div>
-  <div class="scan-log" id="scan-log">Initializing sensors...</div>
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Evac overlay -->
+<div class="evac" id="evac">
+  <div class="evac-icon">🚨</div>
+  <div class="evac-title">Evacuate!</div>
+  <div class="evac-sub">Time's up — your scout is pulling out</div>
+  <div class="evac-box">Items collected: <span id="evac-count">0</span> &nbsp;·&nbsp; Caps earned: <span id="evac-caps">0 ¢</span></div>
+  <button class="evac-btn" id="evac-back">⚡ Return to Zones</button>
 </div>
 
-<!-- ── Result Modal ── -->
-<div class="modal-backdrop" id="modal-backdrop">
-  <div class="modal" id="result-modal">
-    <div class="modal-header" id="modal-header">
-      <div class="modal-header-icon" id="modal-icon">📦</div>
-      <div class="modal-header-title" id="modal-title">Item Found</div>
-    </div>
-    <div class="modal-body" id="modal-body">
-      <!-- Filled by JS -->
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-outline btn-sm" id="modal-close">Discard</button>
-      <button class="btn btn-yellow btn-sm" id="modal-keep">Add to Inventory</button>
-    </div>
-  </div>
-</div>
-
-<!-- ── Page Content ── -->
 <main class="page-wrap">
-  <h1 class="page-title">⚡ Expedition</h1>
-  <p class="page-sub">Choose a zone and send your scout. Higher danger = better loot, higher risk.</p>
 
-  <div id="login-warning" class="alert red" style="display:none;">
-    You must <a href="register.html">enlist</a> before scavenging.
+  <!-- ── ZONE SELECT VIEW ── -->
+  <div id="zone-select">
+    <h1 class="page-title">⚡ Expedition</h1>
+    <p class="page-sub">Choose a zone and enter it. Higher danger = better loot, higher risk.</p>
+    <div id="login-warn" class="alert red" style="display:none;margin-bottom:16px;">
+      You must <a href="register.html">enlist</a> before scavenging.
+    </div>
+    <div class="zone-grid" id="zone-grid"></div>
   </div>
 
-  <!-- Zone grid — populated from /api/zones -->
-  <div class="grid-3" id="zone-grid" style="margin-bottom:32px;">
-    <div style="color:var(--text-dim); font-family:var(--font-mono); font-size:13px;">Loading zones...</div>
-  </div>
+  <!-- ── ACTIVE ZONE VIEW ── -->
+  <div id="zone-view">
+    <!-- Zone hero -->
+    <div class="zone-hero">
+      <div class="zone-hero-inner">
+        <div class="zh-icon" id="zh-icon">☢</div>
+        <div>
+          <div class="zh-name" id="zh-name">Zone</div>
+          <div class="zh-desc" id="zh-desc"></div>
+          <div class="zh-badges" id="zh-badges"></div>
+        </div>
+      </div>
+    </div>
 
-  <!-- Recent Finds Log -->
-  <div class="card" id="finds-card">
-    <div class="card-title">📋 Recent Finds — This Session</div>
-    <div id="finds-log">
-      <p style="font-family:var(--font-mono); font-size:12px; color:var(--text-dim);">
-        Nothing found yet. Go scavenge something.
-      </p>
+    <!-- Timer -->
+    <div class="timer-wrap">
+      <div class="timer-label">⏱ Time Left</div>
+      <div class="timer-track"><div class="timer-fill" id="timer-fill"></div></div>
+      <div class="timer-num" id="timer-num">60</div>
+    </div>
+
+    <!-- Scavenge layout -->
+    <div class="scav-layout">
+      <!-- Left: loot log -->
+      <div class="loot-panel">
+        <div class="loot-panel-head">// items found this run</div>
+        <div id="loot-log"><div class="empty-log" id="empty-log">No items yet — search the area!</div></div>
+      </div>
+      <!-- Right: search -->
+      <div class="search-panel">
+        <div class="search-panel-head">// search areas</div>
+        <button class="search-btn" id="search-btn">
+          <div class="search-btn-inner">
+            <span>🔦</span><span id="search-lbl">Search Area</span>
+          </div>
+        </button>
+        <div class="cooldown-txt" id="cooldown-txt">&nbsp;</div>
+        <div class="spots-grid" id="spots-grid"></div>
+      </div>
     </div>
   </div>
 
 </main>
 
 <script>
-// ================================================================
-//  Expedition — Scavenge mechanic
-//  Checkpoint #06: user clicks zone → animation → loot or risk
-// ================================================================
-
-var currentUser = JSON.parse(localStorage.getItem("currentUser") || "null");
-var pendingItem = null;   // item waiting to be kept or discarded
-var sessionFinds = [];    // finds this session (for the log)
-
-// Loot tables — item templates by type
-var LOOT_TEMPLATES = {
-  food: [
-    { name: "Canned Brahmin Stew",     icon: "🥫", desc: "Two-headed cow stew. Still good... probably." },
-    { name: "Mutant Mushroom",          icon: "🍄", desc: "Glows faintly. Surprisingly nutritious." },
-    { name: "Purified Water Bottle",    icon: "💧", desc: "Filtered through a pre-war purifier." },
-    { name: "Squirrel Jerky",           icon: "🐿", desc: "Dried wasteland squirrel. Chewy." },
-  ],
-  material: [
-    { name: "Scrap Metal",             icon: "🔧", desc: "Twisted chunks of pre-war steel." },
-    { name: "Duct Tape Roll",          icon: "🧰", desc: "Holds the wasteland together." },
-    { name: "Copper Wire Bundle",      icon: "⚡", desc: "Salvaged from an old circuit board." },
-    { name: "Water Purifier Filter",   icon: "🔩", desc: "Salvaged filter. Still functional." },
-  ],
-  weapon: [
-    { name: "Rusty Pipe Wrench",       icon: "🔨", desc: "Heavy and slow but hits hard." },
-    { name: "Laser Pistol",            icon: "🔫", desc: "Pre-war energy weapon. Needs a charge pack." },
-    { name: "Sawed-Off Shotgun",       icon: "💥", desc: "Short range. Very messy." },
-    { name: "Combat Knife",            icon: "🗡",  desc: "Military-grade blade. Still sharp." },
-  ],
-  medicine: [
-    { name: "Rad-Away",                icon: "💊", desc: "Flushes radiation. Tastes awful." },
-    { name: "Stimpak",                 icon: "💉", desc: "Instant healing. Use sparingly." },
-    { name: "Bandage Roll",            icon: "🩹", desc: "Basic wound dressing." },
-  ],
-  armor: [
-    { name: "Leather Jacket",          icon: "🧥", desc: "Scavenged biker jacket. Some protection." },
-    { name: "Riot Helmet",             icon: "⛑",  desc: "Pre-war police helmet. Cracked visor." },
-    { name: "Power Armor Gauntlet",    icon: "🦾", desc: "T-51 hand piece. Heavy but powerful." },
-  ]
-};
-
-var RARITY_WEIGHTS = {
-  common: 50, uncommon: 30, rare: 15, legendary: 5
-};
-
-var SCAN_MESSAGES = [
-  "Bypassing security systems...",
-  "Scanning for hostiles...",
-  "Checking structural integrity...",
-  "Detecting radiation levels...",
-  "Locating salvageable materials...",
-  "Marking extraction route...",
-  "Scout is searching...",
+var ZONES=[
+  {id:"zone-0001",name:"Abandoned Supermarket",icon:"🏪",description:"A pre-war grocery chain. Shelves mostly stripped but the back stockroom is untouched.",dangerLevel:2,lootMultiplier:1.2},
+  {id:"zone-0002",name:"Rusted Highway Bridge",icon:"🌉",description:"Raiders have a toll post here. Sneak under or fight through — good scrap above.",dangerLevel:4,lootMultiplier:1.5},
+  {id:"zone-0003",name:"The Glowing Crater",icon:"☢",description:"A bomb site still hot with radiation. Rare pre-war tech scattered everywhere.",dangerLevel:7,lootMultiplier:2.5},
+  {id:"zone-0004",name:"Vault 31 Entrance",icon:"🚪",description:"The blast door is cracked open. Nobody who went in came back out. Legendary gear awaits.",dangerLevel:9,lootMultiplier:3.5},
+  {id:"zone-0005",name:"Mutant Swamplands",icon:"🌿",description:"Toxic wetlands overrun by feral ghouls. Medicine and food are plentiful.",dangerLevel:6,lootMultiplier:2.0}
 ];
 
-// ── Init ─────────────────────────────────────────────────────────
-window.addEventListener("DOMContentLoaded", function() {
-  if (!currentUser) {
-    document.getElementById("login-warning").style.display = "block";
-  }
-  loadZones();
+var SPOTS=[{icon:"📦",label:"Crates"},{icon:"🚪",label:"Locker"},{icon:"🪨",label:"Rubble"},{icon:"🚗",label:"Car Wreck"},{icon:"🗑",label:"Dumpster"},{icon:"🏗",label:"Scaffold"},{icon:"🧰",label:"Toolbox"},{icon:"🛢",label:"Barrel"},{icon:"💀",label:"Corpse"}];
+
+var LOOT={
+  food:[{name:"Canned Brahmin Stew",icon:"🥫"},{name:"Mutant Mushroom",icon:"🍄"},{name:"Purified Water",icon:"💧"},{name:"Squirrel Jerky",icon:"🐿"}],
+  material:[{name:"Scrap Metal",icon:"🔧"},{name:"Duct Tape",icon:"🧰"},{name:"Copper Wire",icon:"⚡"},{name:"Water Filter",icon:"🔩"}],
+  weapon:[{name:"Rusty Pipe Wrench",icon:"🔨"},{name:"Laser Pistol",icon:"🔫"},{name:"Sawed-Off Shotgun",icon:"💥"},{name:"Combat Knife",icon:"🗡"}],
+  medicine:[{name:"Rad-Away",icon:"💊"},{name:"Stimpak",icon:"💉"},{name:"Bandage Roll",icon:"🩹"}],
+  armor:[{name:"Leather Jacket",icon:"🧥"},{name:"Riot Helmet",icon:"⛑"},{name:"Power Armor Gauntlet",icon:"🦾"}]
+};
+
+var currentUser=JSON.parse(localStorage.getItem("currentUser")||"null");
+var activeZone=null,timeLeft=60,timerInterval=null,cooling=false,found=[],capsTotal=0,spotIdx=0;
+
+// ── Init ──────────────────────────────────────────────────────────
+window.addEventListener("DOMContentLoaded",function(){
+  if(!currentUser) document.getElementById("login-warn").style.display="block";
+  renderZoneSelect();
+  document.getElementById("search-btn").addEventListener("click",doSearch);
+  document.getElementById("evac-back").addEventListener("click",function(){
+    document.getElementById("evac").classList.remove("show");
+    showZoneSelect();
+  });
 });
 
-// ── Load zones from API ───────────────────────────────────────────
-async function loadZones() {
-  try {
-    var res   = await fetch("/api/zones");
-    var zones = await res.json();
-    renderZones(zones);
-  } catch(err) {
-    document.getElementById("zone-grid").innerHTML =
-      '<p style="color:var(--text-dim);font-family:var(--font-mono);font-size:13px;">Could not load zones. Is the server running?</p>';
-  }
-}
-
-function renderZones(zones) {
-  var grid = document.getElementById("zone-grid");
-  grid.innerHTML = "";
-
-  zones.forEach(function(zone) {
-    var isLocked  = zone.status === "locked";
-    var hasStorm  = zone.radstormActive;
-    var danger    = zone.dangerLevel;
-
-    var dangerColor = danger >= 7 ? "red" : danger >= 4 ? "" : "green";
-    var stormBadge  = hasStorm ? '<span class="storm-badge">⚡ Radstorm Active</span>' : "";
-    var dangerDisplay = danger + "/10";
-
-    var card = document.createElement("div");
-    card.className = "zone-card" + (hasStorm ? " radstorm" : "") + (isLocked ? " locked-overlay" : "");
-    card.innerHTML = `
-      <div class="zone-top">
-        <div class="zone-icon">${zone.icon || "☢"}</div>
-        <div>
-          <div class="zone-name">${zone.name}</div>
-          <div class="zone-desc">${zone.description}</div>
-        </div>
-      </div>
-      ${stormBadge}
-      <div class="zone-stats">
-        <div class="zone-stat">Danger<span class="${dangerColor}">${dangerDisplay}</span></div>
-        <div class="zone-stat">Loot x<span>${zone.lootMultiplier}</span></div>
-        <div class="zone-stat">Min Level<span class="blue">${zone.recommendedLevel}</span></div>
-      </div>
-      ${isLocked
-        ? '<div class="locked-tag">🔒 Locked — Level ' + zone.recommendedLevel + ' Required</div>'
-        : '<button class="btn btn-yellow btn-sm" onclick="startScavenge(\'' + zone.id + '\', ' + JSON.stringify(zone).replace(/'/g,"&#39;") + ')">⚡ Scavenge This Zone</button>'
-      }
-    `;
+// ── Zone select ───────────────────────────────────────────────────
+function renderZoneSelect(){
+  var grid=document.getElementById("zone-grid");
+  grid.innerHTML="";
+  ZONES.forEach(function(z){
+    var d=z.dangerLevel;
+    var dc=d>=7?"r":d>=4?"y":"g";
+    var card=document.createElement("div");
+    card.className="zone-card"+(d>=7?" danger-high":"");
+    card.innerHTML=
+      '<div class="zone-top">'+
+        '<div class="zone-icon">'+z.icon+'</div>'+
+        '<div><div class="zone-name">'+z.name+'</div><div class="zone-desc">'+z.description+'</div></div>'+
+      '</div>'+
+      '<div class="zone-stats">'+
+        '<div class="zstat">Danger<strong class="'+dc+'">'+d+'/10</strong></div>'+
+        '<div class="zstat">Loot Bonus<strong class="y">x'+z.lootMultiplier+'</strong></div>'+
+      '</div>'+
+      '<button class="enter-btn">⚡ Enter Zone</button>';
+    card.querySelector(".enter-btn").addEventListener("click",function(){
+      if(!currentUser){alert("You must enlist first!");return;}
+      enterZone(z);
+    });
     grid.appendChild(card);
   });
 }
 
-// ── Scavenge flow ─────────────────────────────────────────────────
-async function startScavenge(zoneId, zone) {
-  if (!currentUser) {
-    alert("You must enlist before scavenging!");
-    return;
-  }
+function showZoneSelect(){
+  document.getElementById("zone-select").style.display="block";
+  document.getElementById("zone-view").style.display="none";
+}
 
-  // Show scanning animation
-  showScanAnimation(zone, function() {
-    var outcome = rollOutcome(zone);
-    showResultModal(outcome, zone);
+// ── Enter zone ────────────────────────────────────────────────────
+function enterZone(zone){
+  activeZone=zone;
+  timeLeft=60;found=[];capsTotal=0;spotIdx=0;cooling=false;
+
+  // Reset UI
+  document.getElementById("loot-log").innerHTML='<div class="empty-log" id="empty-log">No items yet — search the area!</div>';
+  document.getElementById("cooldown-txt").innerHTML="&nbsp;";
+  document.getElementById("search-btn").disabled=false;
+  document.getElementById("search-lbl").textContent="Search Area";
+  buildSpots();
+
+  // Render zone header
+  document.getElementById("zh-icon").textContent=zone.icon;
+  document.getElementById("zh-name").textContent=zone.name;
+  document.getElementById("zh-desc").textContent=zone.description;
+  document.getElementById("zh-badges").innerHTML=
+    '<span class="zbadge zb-danger">☠ Danger '+zone.dangerLevel+'/10</span>'+
+    '<span class="zbadge zb-loot">⚡ Loot x'+zone.lootMultiplier+'</span>';
+
+  // Show zone view
+  document.getElementById("zone-select").style.display="none";
+  document.getElementById("zone-view").style.display="block";
+
+  // Start timer
+  updateTimer();
+  clearInterval(timerInterval);
+  timerInterval=setInterval(function(){
+    timeLeft--;
+    updateTimer();
+    if(timeLeft<=0){clearInterval(timerInterval);triggerEvac();}
+  },1000);
+}
+
+// ── Timer ─────────────────────────────────────────────────────────
+function updateTimer(){
+  var pct=timeLeft/60*100;
+  var fill=document.getElementById("timer-fill");
+  var num=document.getElementById("timer-num");
+  fill.style.width=pct+"%";
+  num.textContent=timeLeft;
+  var cls=timeLeft<=10?"crit":timeLeft<=25?"warn":"";
+  fill.className="timer-fill"+(cls?" "+cls:"");
+  num.className="timer-num"+(cls?" "+cls:"");
+}
+
+// ── Spots grid ────────────────────────────────────────────────────
+function buildSpots(){
+  var g=document.getElementById("spots-grid");g.innerHTML="";
+  SPOTS.forEach(function(s,i){
+    var d=document.createElement("div");
+    d.className="spot";d.id="sp-"+i;
+    d.innerHTML='<span>'+s.icon+'</span><span class="spot-lbl">'+s.label+'</span>';
+    g.appendChild(d);
   });
 }
 
-function showScanAnimation(zone, onComplete) {
-  var overlay  = document.getElementById("scanning-overlay");
-  var bar      = document.getElementById("scan-bar");
-  var logEl    = document.getElementById("scan-log");
-  var titleEl  = document.getElementById("scan-title");
+// ── Search ────────────────────────────────────────────────────────
+function doSearch(){
+  if(cooling||timeLeft<=0)return;
+  var btn=document.getElementById("search-btn");
+  var lbl=document.getElementById("search-lbl");
+  var cdTxt=document.getElementById("cooldown-txt");
+  var sp=document.getElementById("sp-"+(spotIdx%SPOTS.length));
+  if(sp)sp.classList.add("lit");
 
-  titleEl.textContent = "Scouting " + zone.name + "...";
-  bar.style.width = "0%";
-  overlay.classList.add("active");
+  var dur=1200+Math.random()*800;
+  btn.style.setProperty("--dur",dur+"ms");
+  btn.classList.add("scanning");
+  btn.disabled=true;
+  lbl.textContent="Searching...";
+  cooling=true;
 
-  var progress = 0;
-  var msgIndex = 0;
-  var messages = shuffleArray(SCAN_MESSAGES.slice());
+  setTimeout(function(){
+    btn.classList.remove("scanning");
+    if(sp){sp.classList.remove("lit");sp.classList.add("done");}
+    spotIdx++;
+    handleOutcome(rollOutcome());
 
-  var interval = setInterval(function() {
-    progress += Math.random() * 12 + 5;
-    if (progress > 100) progress = 100;
-    bar.style.width = progress + "%";
-
-    // Cycle through log messages
-    if (progress > msgIndex * (100 / messages.length)) {
-      logEl.textContent = messages[msgIndex] || "";
-      msgIndex++;
-    }
-
-    if (progress >= 100) {
-      clearInterval(interval);
-      logEl.textContent = "Scout returning...";
-      setTimeout(function() {
-        overlay.classList.remove("active");
-        onComplete();
-      }, 600);
-    }
-  }, 150);
+    var cd=Math.ceil((2000+activeZone.dangerLevel*200)/1000);
+    var left=cd;
+    var t=setInterval(function(){
+      left--;
+      cdTxt.textContent=left>0?"Next search in "+left+"s...":"";
+      if(left<=0){
+        clearInterval(t);
+        if(timeLeft>0){btn.disabled=false;lbl.textContent="Search Area";cooling=false;}
+      }
+    },1000);
+  },dur);
 }
 
-// ── Outcome logic ─────────────────────────────────────────────────
-function rollOutcome(zone) {
-  var danger = zone.dangerLevel;
-  var rand   = Math.random() * 100;
-
-  // Risk chance scales with danger level
-  var injuryChance  = danger * 4;      // 8–36%
-  var capsLossChance = danger * 3;     // 6–27%
-
-  var consequences = [];
-  var success = true;
-
-  if (rand < injuryChance) {
-    // Got injured — radiation goes up
-    var radIncrease = Math.floor(Math.random() * danger * 2) + 5;
-    consequences.push({ type: "injury", rad: radIncrease });
-    // High danger might also mean no loot
-    if (rand < injuryChance / 2) success = false;
-  }
-
-  if (rand > 100 - capsLossChance) {
-    // Lost caps to raiders
-    var capsLost = Math.floor(Math.random() * danger * 10) + 10;
-    consequences.push({ type: "caps", amount: capsLost });
-  }
-
-  var item = success ? generateLoot(zone) : null;
-  return { item, consequences, success };
+// ── Outcome ───────────────────────────────────────────────────────
+function rollOutcome(){
+  var d=activeZone.dangerLevel;var r=Math.random()*100;
+  if(r<d*5)return{type:"injury",rad:Math.floor(Math.random()*d)+3};
+  if(r<d*5+20)return{type:"empty"};
+  return{type:"loot",item:makeLoot()};
 }
 
-function generateLoot(zone) {
-  // Pick type — higher loot multiplier = more weapon/armor chance
-  var types = ["food", "material", "food", "material", "medicine"];
-  if (zone.lootMultiplier >= 1.5) types.push("weapon");
-  if (zone.lootMultiplier >= 2.0) types.push("armor", "weapon");
-  if (zone.lootMultiplier >= 3.0) types.push("weapon", "armor");
+function handleOutcome(o){
+  if(o.type==="injury"){applyRad(o.rad);showToast("☢ Radiation +"+o.rad+"% — watch yourself!","bad");}
+  else if(o.type==="empty"){showToast("🔍 Nothing here. Keep searching...","");}
+  else{saveLoot(o.item);}
+}
 
-  var type      = types[Math.floor(Math.random() * types.length)];
-  var templates = LOOT_TEMPLATES[type];
-  var template  = templates[Math.floor(Math.random() * templates.length)];
-  var rarity    = rollRarity(zone.lootMultiplier);
-
-  var valueBase = { common: 10, uncommon: 40, rare: 120, legendary: 400 };
-  var value     = Math.floor(valueBase[rarity] * zone.lootMultiplier * (0.8 + Math.random() * 0.4));
-
-  return {
-    id:          "loot-" + Date.now(),
-    userId:      currentUser.id,
-    name:        template.name,
-    icon:        template.icon,
-    type:        type,
-    rarity:      rarity,
-    value:       value,
-    weight:      Math.floor(Math.random() * 5),
-    description: template.desc,
-    foundInZone: null,   // set when saved
+// ── Loot ──────────────────────────────────────────────────────────
+function makeLoot(){
+  var m=activeZone.lootMultiplier;
+  var types=["food","material","food","material","medicine"];
+  if(m>=1.5)types.push("weapon");
+  if(m>=2.0)types.push("armor","weapon");
+  if(m>=3.0)types.push("weapon","armor");
+  var type=types[Math.floor(Math.random()*types.length)];
+  var tpl=LOOT[type][Math.floor(Math.random()*LOOT[type].length)];
+  var rarity=rollRarity(m);
+  var base={common:10,uncommon:40,rare:120,legendary:400};
+  return{
+    userId:currentUser?currentUser.id:"guest",
+    name:tpl.name,icon:tpl.icon,type:type,rarity:rarity,
+    capsValue:Math.floor(base[rarity]*m*(0.8+Math.random()*0.4)),
+    weight:Math.floor(Math.random()*5)+1,
+    foundInZone:activeZone.id,
+    foundAt:new Date().toISOString()
   };
 }
 
-function rollRarity(multiplier) {
-  var rand = Math.random() * 100;
-  // Better multiplier shifts weights toward rare/legendary
-  var shift = (multiplier - 1) * 8;
-  if (rand < 5  + shift)  return "legendary";
-  if (rand < 20 + shift)  return "rare";
-  if (rand < 50 + shift)  return "uncommon";
-  return "common";
+function rollRarity(m){
+  var r=Math.random()*100,s=(m-1)*8;
+  if(r<5+s)return"legendary";
+  if(r<20+s)return"rare";
+  if(r<50+s)return"uncommon";
+  return"common";
 }
 
-// ── Result Modal ──────────────────────────────────────────────────
-function showResultModal(outcome, zone) {
-  var icon   = document.getElementById("modal-icon");
-  var title  = document.getElementById("modal-title");
-  var body   = document.getElementById("modal-body");
-  var header = document.getElementById("modal-header");
-  var keepBtn = document.getElementById("modal-keep");
-
-  pendingItem = outcome.item;
-
-  // Build consequence HTML
-  var consequenceHTML = "";
-  outcome.consequences.forEach(function(c) {
-    if (c.type === "injury") {
-      consequenceHTML += '<div class="consequence-box bad">☢ Radiation exposure +' + c.rad + '% — your scout took a hit.</div>';
-      // Apply radiation to user
-      applyRadiation(c.rad);
-    }
-    if (c.type === "caps") {
-      consequenceHTML += '<div class="consequence-box bad">💰 Lost ' + c.amount + ' caps to raiders on the way back.</div>';
-      applyCapLoss(c.amount);
-    }
-  });
-
-  if (outcome.success && outcome.item) {
-    var item = outcome.item;
-    var rarityClass = "rarity-" + item.rarity;
-    header.style.borderColor = "";
-    icon.textContent  = item.icon || "📦";
-    title.textContent = "Item Found!";
-
-    body.innerHTML = `
-      <div class="item-name">${item.name}</div>
-      <div class="item-meta">
-        <span class="${rarityClass}">${item.rarity.toUpperCase()}</span>
-        &nbsp;·&nbsp; ${item.type}
-        &nbsp;·&nbsp; ${item.value} caps
-      </div>
-      <div class="item-desc">${item.description}</div>
-      ${consequenceHTML}
-      <div class="consequence-box good" style="margin-top:10px;">
-        📍 Found in: ${zone.name}
-      </div>
-    `;
-    keepBtn.style.display = "inline-flex";
-  } else {
-    // Failed run — no loot
-    icon.textContent  = "💀";
-    title.textContent = "Scout Returned Empty";
-    body.innerHTML = `
-      <p style="font-family:var(--font-mono); font-size:13px; color:var(--text); margin-bottom:14px;">
-        The zone was too dangerous. Your scout barely made it back alive.
-      </p>
-      ${consequenceHTML}
-    `;
-    keepBtn.style.display = "none";
+async function saveLoot(item){
+  // Save to loot_items.json via API (Checkpoint 06 requirement)
+  try{
+    var res=await fetch("/api/loot",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(item)});
+    var saved=await res.json();
+    found.push(saved);capsTotal+=saved.capsValue||0;
+    addToLog(saved);
+    showToast("✅ Found: "+saved.name+" ("+saved.rarity+")","good");
+  }catch(e){
+    // Offline fallback — still show the item
+    found.push(item);capsTotal+=item.capsValue||0;
+    addToLog(item);
+    showToast("✅ Found: "+item.name,"good");
   }
-
-  document.getElementById("modal-backdrop").classList.add("active");
 }
 
-// ── Save item to API ──────────────────────────────────────────────
-document.getElementById("modal-keep").addEventListener("click", async function() {
-  if (!pendingItem) return;
+function addToLog(item){
+  var log=document.getElementById("loot-log");
+  var empty=document.getElementById("empty-log");
+  if(empty)empty.remove();
+  var rc={common:"rc",uncommon:"ru",rare:"rr",legendary:"rl"};
+  var e=document.createElement("div");e.className="loot-entry";
+  e.innerHTML=
+    '<div class="li-icon">'+(item.icon||"📦")+'</div>'+
+    '<div class="li-info">'+
+      '<div class="li-name">'+item.name+'</div>'+
+      '<div class="li-meta"><span class="'+(rc[item.rarity]||"rc")+'">'+item.rarity.toUpperCase()+'</span> · '+item.type+'</div>'+
+    '</div>'+
+    '<div class="li-val">'+(item.capsValue||0)+' ¢</div>';
+  log.insertBefore(e,log.firstChild);
+}
 
-  try {
-    var res = await fetch("/api/loot", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(pendingItem)
-    });
-    var saved = await res.json();
+// ── Consequences ──────────────────────────────────────────────────
+function applyRad(amount){
+  if(!currentUser)return;
+  currentUser.radiation=Math.min(100,(currentUser.radiation||0)+amount);
+  localStorage.setItem("currentUser",JSON.stringify(currentUser));
+  fetch("/api/users/"+currentUser.id,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({radiation:currentUser.radiation})}).catch(function(){});
+}
 
-    // Add to session log
-    addToFindLog(saved);
-
-    closeModal();
-  } catch(err) {
-    alert("Could not save item — is the server running?");
+// ── Evacuation ────────────────────────────────────────────────────
+function triggerEvac(){
+  clearInterval(timerInterval);
+  document.getElementById("search-btn").disabled=true;
+  // Update zones cleared stat
+  if(currentUser&&found.length>0){
+    currentUser.zonesCleared=(currentUser.zonesCleared||0)+1;
+    localStorage.setItem("currentUser",JSON.stringify(currentUser));
+    fetch("/api/users/"+currentUser.id,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({zonesCleared:currentUser.zonesCleared})}).catch(function(){});
   }
-});
-
-document.getElementById("modal-close").addEventListener("click", closeModal);
-document.getElementById("modal-backdrop").addEventListener("click", function(e) {
-  if (e.target === this) closeModal();
-});
-
-function closeModal() {
-  document.getElementById("modal-backdrop").classList.remove("active");
-  pendingItem = null;
+  document.getElementById("evac-count").textContent=found.length;
+  document.getElementById("evac-caps").textContent=capsTotal+" ¢";
+  document.getElementById("evac").classList.add("show");
 }
 
-// ── Session find log ──────────────────────────────────────────────
-function addToFindLog(item) {
-  sessionFinds.unshift(item);
-
-  var log = document.getElementById("finds-log");
-  var rarityClass = "rarity-" + item.rarity;
-
-  var entry = document.createElement("div");
-  entry.className = "find-entry";
-  entry.innerHTML = `
-    <div class="find-badge">${item.icon || "📦"}</div>
-    <div class="find-info">
-      <div class="find-name">${item.name}</div>
-      <div class="find-sub"><span class="${rarityClass}">${item.rarity}</span> · ${item.type}</div>
-    </div>
-    <div class="find-value">${item.value} ¢</div>
-  `;
-
-  if (sessionFinds.length === 1) {
-    log.innerHTML = "";
-  }
-  log.insertBefore(entry, log.firstChild);
-}
-
-// ── Apply consequences to user ────────────────────────────────────
-function applyRadiation(amount) {
-  if (!currentUser) return;
-  currentUser.radiation = Math.min(100, (currentUser.radiation || 0) + amount);
-  localStorage.setItem("currentUser", JSON.stringify(currentUser));
-  // Also persist to server
-  fetch("/api/users/" + currentUser.id, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ radiation: currentUser.radiation })
-  }).catch(function(){});
-}
-
-function applyCapLoss(amount) {
-  if (!currentUser) return;
-  currentUser.caps = Math.max(0, (currentUser.caps || 0) - amount);
-  localStorage.setItem("currentUser", JSON.stringify(currentUser));
-  fetch("/api/users/" + currentUser.id, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ caps: currentUser.caps })
-  }).catch(function(){});
-}
-
-// ── Utilities ─────────────────────────────────────────────────────
-function shuffleArray(arr) {
-  for (var i = arr.length - 1; i > 0; i--) {
-    var j = Math.floor(Math.random() * (i + 1));
-    var tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
-  }
-  return arr;
+// ── Toast ─────────────────────────────────────────────────────────
+var _tt=null;
+function showToast(msg,type){
+  var t=document.getElementById("toast");
+  t.textContent=msg;t.className="toast show"+(type?" "+type:"");
+  if(_tt)clearTimeout(_tt);
+  _tt=setTimeout(function(){t.className="toast";},2600);
 }
 </script>
 </body>
